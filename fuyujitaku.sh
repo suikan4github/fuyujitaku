@@ -86,9 +86,10 @@ fi
 
 #----------------------------------------------------------------------
 #
-# Configure the Hibernate option in the systemd.
+# Configure the HibernateDelaySec parameter in the systemd.
+# THis allow the suspend-then-hibernate feature to work.
 #
-echo "----------- Configuring Hibernate option -----------"
+echo "----------- Configuring HibernateDelaySec parameter -----------"
 
 sudo mkdir -p /etc/systemd/sleep.conf.d
 sudo cp /etc/systemd/sleep.conf /etc/systemd/sleep.conf.d/hibernate.conf
