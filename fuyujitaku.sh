@@ -36,13 +36,26 @@ fi
 sudo fallocate -l $TARGET_SWAP_SIZE $SWAPFILE
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to resize swap file."
-    echo "!!!!! Swap recover with original size."
+    echo "!!!!! Swap region is recovered with original size."
     sudo swapon $SWAPFILE
     echo "!!!!! Aborted."
     exit 1
 fi
 sudo mkswap $SWAPFILE
+if [ $? -ne 0 ]; then
+    echo "!!!!! Failed to create swap file."
+    echo "!!!!! This is fatal and could be unrecoverable."
+    echo "!!!!! Please check the swap file."
+    echo "!!!!! Aborted."
+    exit 1
+fi
 sudo swapon $SWAPFILE
+if [ $? -ne 0 ]; then
+    echo "!!!!! Failed to turn on swap file."
+    echo "!!!!! Please check the swap file."    
+    echo "!!!!! Aborted."
+    exit 1
+fi
 
 #----------------------------------------------------------------------
 #
@@ -67,9 +80,12 @@ sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*\)'.*$|\1 ${OPTION}'|" /etc/defau
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update GRUB configuration."
     echo "!!!!! Aborted."
+    # remove the temporary file.
+    rm $SAVED_GRUB
     exit 1
 fi
 
+echo "----------- Updating GRUB configuration -----------"
 # Update the GRUB configuration.
 sudo update-grub
 if [ $? -ne 0 ]; then
