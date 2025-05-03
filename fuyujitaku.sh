@@ -7,7 +7,9 @@
 #######################################################################
 
 # Required swap size is 2 times the RAM size.
-TARGET_SWAP_SIZE=16G
+# Get the current main memory size by free command.
+# Extract the size only and then, times 2.
+TARGET_SWAP_SIZE=$(free --giga | awk '/Mem:/{print $2*2 "G"}')
 
 #----------------------------------------------------------------------
 #
@@ -17,7 +19,13 @@ echo "----------- Resizing swap file -----------"
 
 # Get the swap file name.
 SWAPFILE=$(swapon --show=NAME --noheadings)
-
+if [ -f $SWAPFILE ]; then
+    echo "Swap file: $SWAPFILE"
+else
+    echo "!!!!! Swap file not found."
+    echo "!!!!! Aborted."
+    exit 1
+fi
 
 sudo swapoff $SWAPFILE
 if [ $? -ne 0 ]; then
