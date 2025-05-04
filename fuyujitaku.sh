@@ -14,6 +14,14 @@ if [ -z "$TARGET_SWAP_SIZE" ]; then
     TARGET_SWAP_SIZE=$(free --giga | awk '/Mem:/{print $2*2 "G"}')
 fi
 echo "Target swap size: $TARGET_SWAP_SIZE"
+# convert target swap size to MB
+TARGET_SWAP_SIZE=$(echo "$TARGET_SWAP_SIZE" | awk '{print $1*1024}')
+
+# save original swap size
+mkdir -p original
+ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
+echo "$ORIGINAL_SWAP_SIZE" > original/swap_size
+
 #----------------------------------------------------------------------
 #
 # Resize the swap file.
@@ -36,14 +44,15 @@ if [ $? -ne 0 ]; then
     echo "Aborted."
     exit 1
 fi
-sudo fallocate -l "$TARGET_SWAP_SIZE" "$SWAPFILE"
+
+sudo dd if=/dev/zero of="$SWAPFILE" bs=1M count="$TARGET_SWAP_SIZE" status=progress
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to resize swap file."
     echo "!!!!! Swap region is recovered with original size."
-    sudo swapon "$SWAPFILE"
     echo "!!!!! Aborted."
     exit 1
 fi
+
 sudo mkswap "$SWAPFILE"
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to create swap file."
@@ -65,6 +74,7 @@ fi
 # Inform swap location to the kernel.
 #
 echo "----------- Editing GRUB configuration -----------"
+
 
 # Get the UUID of the root filesystem (where the swap file stays).
 UUID=$(findmnt / -o UUID --noheadings)
@@ -99,8 +109,8 @@ if [ $? -ne 0 ]; then
     echo "!!!!! Aborted."
     exit 1
 else
-    # remove the temporary file.
-    rm "$SAVED_GRUB"
+    # Save the original file.
+    cp "$SAVED_GRUB" original/grub
 fi
 
 #----------------------------------------------------------------------
