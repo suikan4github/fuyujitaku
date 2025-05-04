@@ -5,15 +5,16 @@
 # This script is used to revert the changes made by fuyujitaku.sh.
 #
 #######################################################################
+BACKUPDIR=backup
 
 # Check if the original swap size file exists
-if [ ! -f original/swap_size ]; then
+if [ ! -f "$BACKUPDIR"/swap_size ]; then
     echo "Original swap size file not found."
     echo "Aborted."
     exit 1
 fi
 # Read the original swap size
-ORIGINAL_SWAP_SIZE=$(cat original/swap_size)
+ORIGINAL_SWAP_SIZE=$(cat "$BACKUPDIR"/swap_size)
 echo "Original swap size: $ORIGINAL_SWAP_SIZE MB"
 
 #-----------------------------------------------------------------------    
@@ -59,7 +60,7 @@ if [ $? -ne 0 ]; then
 fi
 #-----------------------------------------------------------------------
 # Retrieve the grub file.
-sudo cp original/grub /etc/default/grub
+sudo cp "$BACKUPDIR"/grub /etc/default/grub
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to copy grub file."
     echo "!!!!! Aborted."

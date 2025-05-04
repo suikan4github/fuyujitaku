@@ -18,9 +18,10 @@ echo "Target swap size: $TARGET_SWAP_SIZE"
 TARGET_SWAP_SIZE=$(echo "$TARGET_SWAP_SIZE" | awk '{print $1*1024}')
 
 # save original swap size
-mkdir -p original
+BACKUPDIR=backup
+mkdir -p "$BACKUPDIR"
 ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
-echo "$ORIGINAL_SWAP_SIZE" > original/swap_size
+echo "$ORIGINAL_SWAP_SIZE" > "$BACKUPDIR"/swap_size
 
 #----------------------------------------------------------------------
 #
@@ -110,7 +111,7 @@ if [ $? -ne 0 ]; then
     exit 1
 else
     # Save the original file.
-    cp "$SAVED_GRUB" original/grub
+    cp "$SAVED_GRUB" "$BACKUPDIR"/grub
 fi
 
 #----------------------------------------------------------------------
