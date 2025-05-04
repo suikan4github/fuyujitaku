@@ -13,7 +13,7 @@ if [ -not -v TARGET_SWAP_SIZE ]; then
     # Extract the size only and then, times 2.
     TARGET_SWAP_SIZE=$(free --giga | awk '/Mem:/{print $2*2 "G"}')
 fi
-
+echo "Target swap size: $TARGET_SWAP_SIZE"
 #----------------------------------------------------------------------
 #
 # Resize the swap file.
