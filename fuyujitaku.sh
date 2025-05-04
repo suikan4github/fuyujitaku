@@ -70,7 +70,7 @@ echo "----------- Editing GRUB configuration -----------"
 UUID=$(findmnt / -o UUID --noheadings)
 
 # Get the offset of the swap file.
-OFFSET=$(sudo filefrag -v /swapfile | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
+OFFSET=$(sudo filefrag -v $SWAPFILE | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
 
 # Construct the resume option for kernel parameters.
 OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
@@ -79,7 +79,7 @@ OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 SAVED_GRUB=$(mktemp)
 sudo cp /etc/default/grub $SAVED_GRUB
 # Add the resume option to the GRUB_CMDLINE_LINUX_DEFAULT line in /etc/default/grub.
-sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*\)'.*$|\1 ${OPTION}'|" /etc/default/grub
+sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*\)\(.\).*$|\1 ${OPTION}\2|" /etc/default/grub
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update GRUB configuration."
     echo "!!!!! Aborted."
