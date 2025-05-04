@@ -6,10 +6,13 @@
 #
 #######################################################################
 
-# Required swap size is 2 times the RAM size.
-# Get the current main memory size by free command.
-# Extract the size only and then, times 2.
-TARGET_SWAP_SIZE=$(free --giga | awk '/Mem:/{print $2*2 "G"}')
+# if TARGET_SWAP_SIZE is not set, it will be calculated as 2 times the RAM size.
+if [ -not -v TARGET_SWAP_SIZE ]; then
+    # Required swap size is 2 times the RAM size.
+    # Get the current main memory size by free command.
+    # Extract the size only and then, times 2.
+    TARGET_SWAP_SIZE=$(free --giga | awk '/Mem:/{print $2*2 "G"}')
+fi
 
 #----------------------------------------------------------------------
 #
