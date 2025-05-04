@@ -7,7 +7,7 @@
 #######################################################################
 
 # if TARGET_SWAP_SIZE is not set, it will be calculated as 2 times the RAM size.
-if [ -not -v TARGET_SWAP_SIZE ]; then
+if [ -z "$TARGET_SWAP_SIZE" ]; then
     # Required swap size is 2 times the RAM size.
     # Get the current main memory size by free command.
     # Extract the size only and then, times 2.
@@ -22,7 +22,7 @@ echo "----------- Resizing swap file -----------"
 
 # Get the swap file name.
 SWAPFILE=$(swapon --show=NAME --noheadings)
-if [ -f $SWAPFILE ]; then
+if [ -f "$SWAPFILE" ]; then
     echo "Swap file: $SWAPFILE"
 else
     echo "!!!!! Swap file not found."
@@ -30,21 +30,21 @@ else
     exit 1
 fi
 
-sudo swapoff $SWAPFILE
+sudo swapoff "$SWAPFILE"
 if [ $? -ne 0 ]; then
     echo "Failed to turn off swap file."
     echo "Aborted."
     exit 1
 fi
-sudo fallocate -l $TARGET_SWAP_SIZE $SWAPFILE
+sudo fallocate -l "$TARGET_SWAP_SIZE" "$SWAPFILE"
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to resize swap file."
     echo "!!!!! Swap region is recovered with original size."
-    sudo swapon $SWAPFILE
+    sudo swapon "$SWAPFILE"
     echo "!!!!! Aborted."
     exit 1
 fi
-sudo mkswap $SWAPFILE
+sudo mkswap "$SWAPFILE"
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to create swap file."
     echo "!!!!! This is fatal and could be unrecoverable."
@@ -52,7 +52,7 @@ if [ $? -ne 0 ]; then
     echo "!!!!! Aborted."
     exit 1
 fi
-sudo swapon $SWAPFILE
+sudo swapon "$SWAPFILE"
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to turn on swap file."
     echo "!!!!! Please check the swap file."    
@@ -70,21 +70,21 @@ echo "----------- Editing GRUB configuration -----------"
 UUID=$(findmnt / -o UUID --noheadings)
 
 # Get the offset of the swap file.
-OFFSET=$(sudo filefrag -v $SWAPFILE | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
+OFFSET=$(sudo filefrag -v "$SWAPFILE" | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
 
 # Construct the resume option for kernel parameters.
 OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 
 # Save the current GRUB configuration to a temporary file.
 SAVED_GRUB=$(mktemp)
-sudo cp /etc/default/grub $SAVED_GRUB
+sudo cp /etc/default/grub "$SAVED_GRUB"
 # Add the resume option to the GRUB_CMDLINE_LINUX_DEFAULT line in /etc/default/grub.
 sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*\)\(.\).*$|\1 ${OPTION}\2|" /etc/default/grub
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update GRUB configuration."
     echo "!!!!! Aborted."
     # remove the temporary file.
-    rm $SAVED_GRUB
+    rm "$SAVED_GRUB"
     exit 1
 fi
 
@@ -95,12 +95,12 @@ if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update GRUB configuration."
     # Restore the original GRUB configuration.
     echo "!!!!! Restoring original GRUB configuration."
-    sudo mv $SAVED_GRUB /etc/default/grub
+    sudo mv "$SAVED_GRUB" /etc/default/grub
     echo "!!!!! Aborted."
     exit 1
 else
     # remove the temporary file.
-    rm $SAVED_GRUB
+    rm "$SAVED_GRUB"
 fi
 
 #----------------------------------------------------------------------
