@@ -79,7 +79,7 @@ OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 SAVED_GRUB=$(mktemp)
 sudo cp /etc/default/grub "$SAVED_GRUB"
 # Add the resume option to the GRUB_CMDLINE_LINUX_DEFAULT line in /etc/default/grub.
-sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*\)\(.\).*$|\1 ${OPTION}\2|" /etc/default/grub
+sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*['\"].*\)\(['\"]\).*$|\1 ${OPTION}\2|" /etc/default/grub
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update GRUB configuration."
     echo "!!!!! Aborted."
