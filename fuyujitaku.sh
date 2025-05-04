@@ -111,9 +111,8 @@ fi
 echo "----------- Configuring HibernateDelaySec parameter -----------"
 
 sudo mkdir -p /etc/systemd/sleep.conf.d
-sudo cp /etc/systemd/sleep.conf /etc/systemd/sleep.conf.d/hibernate.conf
+cat /etc/systemd/sleep.conf | sed 's|^.*HibernateDelaySec=.*$|HibernateDelaySec=900|'| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
 
-sudo sed -i 's|^.*HibernateDelaySec=.*$|HibernateDelaySec=900|' /etc/systemd/sleep.conf.d/hibernate.conf
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update /etc/systemd/sleep.conf.d/hibernate.conf."
     echo "!!!!! Aborted."
