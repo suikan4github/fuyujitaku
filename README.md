@@ -20,7 +20,7 @@ This script supports only systems with a swap file. The system with swap partiti
 - (#1) Success to hibernate and resume, but after resuming, the system gets stuck during the shutdown process. The workaround is reboot-then-shutdown.
 - (#2) "Hibernation" is not shown in the menu. 
 - (#3) The mouse cursor is rendered incorrectly after resuming. The workaround is to reboot the system.
-- (#4) Intel Core i5-8635U, 8GB RAM, 256GB SSD.
+- (#4) Intel Core i5-8365U, 8GB RAM, 256GB SSD.
 
 
 ## How to use
