@@ -18,7 +18,7 @@ This script supports only systems with a swap file. The system with swap partiti
 | Kubuntu 25.04    | Fujitsu FMV Lifebook U939 (#4) | Works fine |
 
 - (#1) Success to hibernate and resume, but after resuming, the system gets stuck during the shutdown process. The workaround is reboot-then-shutdown.
-- (#2) "Hibernation" is not shown in the menu. 
+- (#2) To show "Hibernation" button in the menu, you need to install the [Hibernate Status Button](https://extensions.gnome.org/extension/755/hibernate-status-button/). 
 - (#3) The mouse cursor is rendered incorrectly after resuming. The workaround is to reboot the system.
 - (#4) Intel Core i5-8365U, 8GB RAM, 256GB SSD.
 
