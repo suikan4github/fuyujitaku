@@ -35,7 +35,7 @@ This script supports only systems with a swap file. The system with swap partiti
 
 By default the swap size will be set to 2 times the RAM size. If you want to set a different swap size, you can specify it as an environment variable TARGET_SWAP_SIZE before running the script. For example, to set the swap size to 12GB , run the following command:
 ```bash
-TARGET_SWAP_SIZE=12G . ./fuyujitaku.sh
+TARGET_SWAP_SIZE=12G ./fuyujitaku.sh
 ```
 
 ## How to revert
