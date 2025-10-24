@@ -89,6 +89,10 @@ OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 # Save the current GRUB configuration to a temporary file.
 SAVED_GRUB=$(mktemp)
 sudo cp /etc/default/grub "$SAVED_GRUB"
+
+# If the grub configuration contains resume/resume_offset, remove them first.
+sudo sed -i /^GRUB_CMDLINE_LINUX_DEFAULT/s/resume[_=a-zA-Z0-9-]*//g /etc/default/grub
+
 # Add the resume option to the GRUB_CMDLINE_LINUX_DEFAULT line in /etc/default/grub.
 sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*['\"].*\)\(['\"]\).*$|\1 ${OPTION}\2|" /etc/default/grub
 if [ $? -ne 0 ]; then
