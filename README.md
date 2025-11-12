@@ -38,6 +38,19 @@ By default the swap size will be set to 2 times the RAM size. If you want to set
 TARGET_SWAP_SIZE=12G ./fuyujitaku.sh
 ```
 
+Also, you can specify a parameter to specify the time delay from the entering sleep to the entering hibernaiton. This parameter is set by HIBERNATE_DELAY_SEC enviroment variable. By default, its value is 900[sec]. To change it to 600[sec], run the following command : 
+
+```bash
+HIBERNATE_DELAY_SEC=600 ./fuyujitaku.sh
+```
+
+You can specify both parameter at once. 
+
+```bash
+TARGET_SWAP_SIZE=12G HIBERNATE_DELAY_SEC=600 ./fuyujitaku.sh
+```
+
+
 ## How to revert
 The revert.sh script is provided to revert the changes made by fuyujitaku.sh script.
 

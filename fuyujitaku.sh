@@ -13,9 +13,17 @@ if [ -z "$TARGET_SWAP_SIZE" ]; then
     # Extract the size only and then, times 2.
     TARGET_SWAP_SIZE=$(free --giga | awk '/Mem:/{print $2*2 "G"}')
 fi
-echo "Target swap size: $TARGET_SWAP_SIZE"
+echo "Target swap size: ${TARGET_SWAP_SIZE}Byte"
 # convert target swap size to MB
 TARGET_SWAP_SIZE=$(echo "$TARGET_SWAP_SIZE" | awk '{print $1*1024}')
+
+# if HIBERNATE_DELAY_SEC is not set, the default value is 900 [Sec]
+if [ -z "$HIBERNATE_DELAY_SEC" ]; then
+    # After 900 sec entering sleep, system goes to hibernate. 
+    HIBERNATE_DELAY_SEC=900
+fi
+echo "Hibernate delay after sleep: ${HIBERNATE_DELAY_SEC}Sec"
+
 
 # save original swap size
 BACKUPDIR=backup
@@ -126,7 +134,7 @@ fi
 echo "----------- Configuring HibernateDelaySec parameter -----------"
 
 sudo mkdir -p /etc/systemd/sleep.conf.d
-cat /etc/systemd/sleep.conf | sed 's|^.*HibernateDelaySec=.*$|HibernateDelaySec=900|'| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
+cat /etc/systemd/sleep.conf | sed "s|^.*HibernateDelaySec=.*$|HibernateDelaySec=${HIBERNATE_DELAY_SEC}|"| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
 
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update /etc/systemd/sleep.conf.d/hibernate.conf."
