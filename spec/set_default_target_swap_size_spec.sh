@@ -10,7 +10,7 @@ Describe 'set_default_target_swap_size function'
       return 0
   }'
 
-  It "should set TARGET_SWAP_SIZE=2468"
+  It "should set TARGET_SWAP_SIZE=2468M"
     When call set_default_target_swap_size
     The variable TARGET_SWAP_SIZE should equal '2468M'
   End
