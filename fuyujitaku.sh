@@ -6,200 +6,269 @@
 #
 #######################################################################
 
-# This script supports only ext4 filesystem.
 # Check if the root filesystem is ext4.
-ROOT_FS_TYPE=$(findmnt / -o FSTYPE --noheadings)
-if [ "$ROOT_FS_TYPE" != "ext4" ]; then
-    echo "!!!!! Root filesystem is not ext4."
-    echo "!!!!! This script supports only ext4 filesystem."
-    echo "!!!!! Aborted."
-    exit 1
-fi
+# if not, abort the script.
+check_root_filesystem() {
+    ROOT_FS_TYPE=$(findmnt / -o FSTYPE --noheadings)
+    if [ "$ROOT_FS_TYPE" != "ext4" ]; then
+        echo "!!!!! Root filesystem is not ext4."
+        echo "!!!!! This script supports only ext4 filesystem."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
+}
 
 
-# if TARGET_SWAP_SIZE is not set, it will be calculated as 2 times the RAM size.
-if [ -z "$TARGET_SWAP_SIZE" ]; then
-    # Required swap size is 2 times the RAM size.
-    # Get the current main memory size by free command.
-    # Extract the size only and then, times 2.
+# Print usage information.
+print_usage() {
+    echo "Usage:"
+    echo "./fuyujitaku.sh [OPTIONS]"
+    echo "   OPTIONS: -s SIZE  : Target swap size. SIZE is NNNG or NNNM format."
+    echo "                       Where G is GigaByte and M is MegaByte."
+    echo "                       If not specified, it will be set to 2 times the RAM size."
+    echo "            -d DELAY : Hibernate delay time. DELAY isNNNs, NNNm format."    
+    echo "                       Where s is seconds and m is minutes."
+    echo "                       If not specified, it will be set to 15m."
+}
+
+# Parse command line arguments.
+# If nor arguments are given, default values are used.
+parse_arguments() {
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -s)
+                TARGET_SWAP_SIZE="$2"
+                shift 2
+                ;;
+            -d)
+                HIBERNATE_DELAY_SEC="$2"
+                shift 2
+                ;;
+            -h|--help)
+                print_usage
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                print_usage
+                exit 1
+                ;;
+        esac
+    done
+}
+
+# Set default value to the TARGET_SWAP_SIZE variable.
+# The default value is 2 times the RAM size by Megabyte.
+# The value must have 'M' suffix.
+set_default_target_swap_size() {
     TARGET_SWAP_SIZE=$(free --mega | awk '/Mem:/{print $2*2 "M"}')
-fi
+}
 
-# We accept the TARGET_SWAP_SIZE format as NNNG or NNNM.
-# Other formats are rejected. 
-# NNNG is NNN*1024M. So, we convert NNNG to NNN*1024M format.
-# ANd then, we strip the unit and keep only the size in MB.
-if echo "$TARGET_SWAP_SIZE" | grep -qE '^[0-9]+G$'; then
-    # G format
-    SIZE_IN_G=$(echo "$TARGET_SWAP_SIZE" | sed 's/G//')
-    TARGET_SWAP_SIZE=$(echo "$SIZE_IN_G" | awk '{print $1*1024 "M"}')
-elif echo "$TARGET_SWAP_SIZE" | grep -qE '^[0-9]+M$'; then
-    # M format
-    :
-else
-    echo "!!!!! TARGET_SWAP_SIZE format is invalid."
-    echo "!!!!! Please set TARGET_SWAP_SIZE in NNNG or NNNM format."
-    echo "!!!!! Aborted."
-    exit 1
-fi 
-
-# Remove the derived unit and keep only the size in MB.
-TARGET_SWAP_SIZE=$(echo "$TARGET_SWAP_SIZE" | sed 's/M//')
-
-echo "TARGET_SWAP_SIZE   : ${TARGET_SWAP_SIZE}MByte"
+# Set default value to the HIBERNATE_DELAY_SEC variable.
+# The default value is 15 minutes.
+# The value must have 'm' suffix.
+set_default_hibernate_delay_sec() {
+    HIBERNATE_DELAY_SEC="15m"
+}
 
 
-# if HIBERNATE_DELAY_SEC is not set, the default value is 900 [Sec]
-if [ -z "$HIBERNATE_DELAY_SEC" ]; then
-    # After 900 sec entering sleep, system goes to hibernate. 
-    HIBERNATE_DELAY_SEC=900s
-fi
+# Validate and normalize the TARGET_SWAP_SIZE.
+# 1G must be times 1024M.
+# Finally, we remove the unit and keep only the size in MB.
+# If the format is invalid, the script aborts.
+validate_and_normalize_target_swap_size() {
+    if echo "$TARGET_SWAP_SIZE" | grep -qE '^[0-9]+G$'; then
+        # G format
+        SIZE_IN_G=$(echo "$TARGET_SWAP_SIZE" | sed 's/G//')
+        # Remove the 'G' suffix and convert to M.
+        TARGET_SWAP_SIZE=$(echo "$SIZE_IN_G" | awk '{print $1*1024}')
+    elif echo "$TARGET_SWAP_SIZE" | grep -qE '^[0-9]+M$'; then
+        # M format
+        # Remove the 'M' suffix.
+        TARGET_SWAP_SIZE=$(echo "$TARGET_SWAP_SIZE" | sed 's/M//')
+    else
+        echo "!!!!! TARGET_SWAP_SIZE format is invalid."
+        echo "!!!!! Please set TARGET_SWAP_SIZE in NNNG or NNNM format."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
+}
 
-# HIBERNATE_DELAY_SEC format must be NNNs, NNNsec, NNNm or NNNmin
-# All other formats are rejected.
-# NNNm is equivalent to NNN*60 sec.
-# All formats are converted to NNN format.
-if echo "$HIBERNATE_DELAY_SEC" | grep -qE '^[0-9]+s(ec)?$'; then
-    # sec format
-    HIBERNATE_DELAY_SEC=$(echo "$HIBERNATE_DELAY_SEC" | sed -E 's/s|sed//')
-elif echo "$HIBERNATE_DELAY_SEC" | grep -qE '^[0-9]+m(in)?$'; then
-    # min format
-    SIZE_IN_MIN=$(echo "$HIBERNATE_DELAY_SEC" | sed -E 's/m|min//')
-    HIBERNATE_DELAY_SEC=$(echo "$SIZE_IN_MIN" | awk '{print $1*60}')
-else
-    echo "!!!!! HIBERNATE_DELAY_SEC format is invalid."
-    echo "!!!!! Please set HIBERNATE_DELAY_SEC in NNNs, NNNsec, NNNm or NNNmin format."
-    echo "!!!!! Aborted."
-    exit 1
-fi
+# Validate and normalize the HIBERNATE_DELAY_SEC.
+# 1min must be times 60 sec.
+# Finally, we remove the unit and keep only the size in sec.
+# If the format is invalid, the script aborts.
+validate_and_normalize_hibernate_delay_sec() {
+    if echo "$HIBERNATE_DELAY_SEC" | grep -qE '^[0-9]+s$'; then
+        # sec format
+        HIBERNATE_DELAY_SEC=$(echo "$HIBERNATE_DELAY_SEC" | sed 's/s//')
+    elif echo "$HIBERNATE_DELAY_SEC" | grep -qE '^[0-9]+m$'; then
+        # min format
+        SIZE_IN_MIN=$(echo "$HIBERNATE_DELAY_SEC" | sed 's/m//')
+        HIBERNATE_DELAY_SEC=$(echo "$SIZE_IN_MIN" | awk '{print $1*60}')
+    else
+        echo "!!!!! HIBERNATE_DELAY_SEC format is invalid."
+        echo "!!!!! Please set HIBERNATE_DELAY_SEC in NNNs or NNNm format."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
+}
 
-echo "HIBERNATE_DELAY_SEC: ${HIBERNATE_DELAY_SEC}sec"
 
-# save original swap size
-BACKUPDIR=backup
-mkdir -p "$BACKUPDIR"
-ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
-echo "$ORIGINAL_SWAP_SIZE" > "$BACKUPDIR"/swap_size
+# Print the parameters for confirmation.
+print_parameters() {
+    echo "----------- Parameters -----------"
+    echo "TARGET_SWAP_SIZE   : ${TARGET_SWAP_SIZE}MByte"
+    echo "HIBERNATE_DELAY_SEC: ${HIBERNATE_DELAY_SEC}sec"
+    echo "---------------------------------"
+}   
+
+# Save original swap size
+save_original_swap_size() {
+    BACKUPDIR=backup
+    mkdir -p "$BACKUPDIR"
+    ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
+    echo "$ORIGINAL_SWAP_SIZE" > "$BACKUPDIR"/swap_size
+}
+
 
 #----------------------------------------------------------------------
 #
 # Resize the swap file.
+# Use TARGET_SWAP_SIZE variable for the target size in MByte.
 #
-echo "----------- Resizing swap file -----------"
+resize_swap_file() {
+    echo "----------- Resizing swap file -----------"
 
-# Get the swap file name.
-SWAPFILE=$(swapon --show=NAME --noheadings)
-if [ -f "$SWAPFILE" ]; then
-    echo "Swap file: $SWAPFILE"
-else
-    echo "!!!!! Swap file not found."
-    echo "!!!!! Aborted."
-    exit 1
-fi
+    # Get the swap file name.
+    SWAPFILE=$(swapon --show=NAME --noheadings)
+    if [ -f "$SWAPFILE" ]; then
+        echo "Swap file: $SWAPFILE"
+    else
+        echo "!!!!! Swap file not found."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
 
-sudo swapoff "$SWAPFILE"
-if [ $? -ne 0 ]; then
-    echo "Failed to turn off swap file."
-    echo "Aborted."
-    exit 1
-fi
+    sudo swapoff "$SWAPFILE"
+    if [ $? -ne 0 ]; then
+        echo "Failed to turn off swap file."
+        echo "Aborted."
+        exit 1
+    fi
 
-sudo dd if=/dev/zero of="$SWAPFILE" bs=1M count="$TARGET_SWAP_SIZE" status=progress
-if [ $? -ne 0 ]; then
-    echo "!!!!! Failed to resize swap file."
-    echo "!!!!! Swap region is recovered with original size."
-    echo "!!!!! Aborted."
-    exit 1
-fi
+    sudo dd if=/dev/zero of="$SWAPFILE" bs=1M count="$TARGET_SWAP_SIZE" status=progress
+    if [ $? -ne 0 ]; then
+        echo "!!!!! Failed to resize swap file."
+        echo "!!!!! Swap region is recovered with original size."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
 
-sudo mkswap "$SWAPFILE"
-if [ $? -ne 0 ]; then
-    echo "!!!!! Failed to create swap file."
-    echo "!!!!! This is fatal and could be unrecoverable."
-    echo "!!!!! Please check the swap file."
-    echo "!!!!! Aborted."
-    exit 1
-fi
-sudo swapon "$SWAPFILE"
-if [ $? -ne 0 ]; then
-    echo "!!!!! Failed to turn on swap file."
-    echo "!!!!! Please check the swap file."    
-    echo "!!!!! Aborted."
-    exit 1
-fi
+    sudo mkswap "$SWAPFILE"
+    if [ $? -ne 0 ]; then
+        echo "!!!!! Failed to create swap file."
+        echo "!!!!! This is fatal and could be unrecoverable."
+        echo "!!!!! Please check the swap file."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
+    sudo swapon "$SWAPFILE"
+    if [ $? -ne 0 ]; then
+        echo "!!!!! Failed to turn on swap file."
+        echo "!!!!! Please check the swap file."    
+        echo "!!!!! Aborted."
+        exit 1
+    fi
+    echo "----------- Resize completed -----------"
+}
 
 #----------------------------------------------------------------------
 #
 # Inform swap location to the kernel.
+# Edit /etc/default/grub to add resume and resume_offset parameters.
+# These parameter tell the volume and offset of the swap file to the kernel.
 #
-echo "----------- Editing GRUB configuration -----------"
+inform_swap_location_to_kernel() {
+    echo "----------- Editing GRUB configuration -----------"
 
 
-# Get the UUID of the root filesystem (where the swap file stays).
-UUID=$(findmnt / -o UUID --noheadings)
+    # Get the UUID of the root filesystem (where the swap file stays).
+    UUID=$(findmnt / -o UUID --noheadings)
 
-# Get the offset of the swap file.
-OFFSET=$(sudo filefrag -v "$SWAPFILE" | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
+    # Get the offset of the swap file.
+    OFFSET=$(sudo filefrag -v "$SWAPFILE" | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
 
-# Construct the resume option for kernel parameters.
-OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
+    # Construct the resume option for kernel parameters.
+    OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 
-# Save the current GRUB configuration to a temporary file.
-SAVED_GRUB=$(mktemp)
-sudo cp /etc/default/grub "$SAVED_GRUB"
+    # Save the current GRUB configuration to a temporary file.
+    SAVED_GRUB=$(mktemp)
+    sudo cp /etc/default/grub "$SAVED_GRUB"
 
-# If the grub configuration contains resume/resume_offset, remove them first.
-sudo sed -i /^GRUB_CMDLINE_LINUX_DEFAULT/s/resume[_=a-zA-Z0-9-]*//g /etc/default/grub
+    # If the grub configuration contains resume/resume_offset, remove them first.
+    sudo sed -i /^GRUB_CMDLINE_LINUX_DEFAULT/s/resume[_=a-zA-Z0-9-]*//g /etc/default/grub
 
-# Add the resume option to the GRUB_CMDLINE_LINUX_DEFAULT line in /etc/default/grub.
-sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*['\"].*\)\(['\"]\).*$|\1 ${OPTION}\2|" /etc/default/grub
-if [ $? -ne 0 ]; then
-    echo "!!!!! Failed to update GRUB configuration."
-    echo "!!!!! Aborted."
-    # remove the temporary file.
-    rm "$SAVED_GRUB"
-    exit 1
-fi
+    # Add the resume option to the GRUB_CMDLINE_LINUX_DEFAULT line in /etc/default/grub.
+    sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*['\"].*\)\(['\"]\).*$|\1 ${OPTION}\2|" /etc/default/grub
+    if [ $? -ne 0 ]; then
+        echo "!!!!! Failed to update GRUB configuration."
+        echo "!!!!! Aborted."
+        # remove the temporary file.
+        rm "$SAVED_GRUB"
+        exit 1
+    fi
 
-echo "----------- Updating GRUB configuration -----------"
-# Update the GRUB configuration.
-sudo update-grub
-if [ $? -ne 0 ]; then
-    echo "!!!!! Failed to update GRUB configuration."
-    # Restore the original GRUB configuration.
-    echo "!!!!! Restoring original GRUB configuration."
-    sudo mv "$SAVED_GRUB" /etc/default/grub
-    echo "!!!!! Aborted."
-    exit 1
-else
-    # Save the original file.
-    cp "$SAVED_GRUB" "$BACKUPDIR"/grub
-fi
+    # Update the GRUB configuration.
+    sudo update-grub
+    if [ $? -ne 0 ]; then
+        echo "!!!!! Failed to update GRUB configuration."
+        # Restore the original GRUB configuration.
+        echo "!!!!! Restoring original GRUB configuration."
+        sudo mv "$SAVED_GRUB" /etc/default/grub
+        echo "!!!!! Aborted."
+        exit 1
+    else
+        # Save the original file.
+        cp "$SAVED_GRUB" "$BACKUPDIR"/grub
+    fi
+
+    echo "----------- GRUB configuration updated -----------"
+}
 
 #----------------------------------------------------------------------
 #
 # Configure the HibernateDelaySec parameter in the systemd.
 # THis allow the suspend-then-hibernate feature to work.
+# Using HIBERNATE_DELAY_SEC variable for the delay time in seconds.
+# Note that the  hibernate.conf file is "drop-in" file.
+# So, it will be not overwritten by system updates.
 #
-echo "----------- Configuring HibernateDelaySec parameter -----------"
+configure_hibernate_delay_sec() {
+    echo "----------- Configuring HibernateDelaySec parameter -----------"
 
-sudo mkdir -p /etc/systemd/sleep.conf.d
-cat /etc/systemd/sleep.conf | sed "s|^.*HibernateDelaySec=.*$|HibernateDelaySec=${HIBERNATE_DELAY_SEC}|"| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
+    sudo mkdir -p /etc/systemd/sleep.conf.d
+    cat /etc/systemd/sleep.conf | sed "s|^.*HibernateDelaySec=.*$|HibernateDelaySec=${HIBERNATE_DELAY_SEC}|"| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
 
-if [ $? -ne 0 ]; then
-    echo "!!!!! Failed to update /etc/systemd/sleep.conf.d/hibernate.conf."
-    echo "!!!!! Aborted."
-    exit 1
-fi
+    if [ $? -ne 0 ]; then
+        echo "!!!!! Failed to update /etc/systemd/sleep.conf.d/hibernate.conf."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
+}
 
 #----------------------------------------------------------------------
 #
 # Configure the Hibernation policy in the systemd.
+# This policy allows all users to hibernate the system.
+# Note that the 50-hibernate.rules file is "drop-in" file.
+# So, it will be not overwritten by system updates. 
 #
-echo "----------- Configuring Hibernation policy -----------"
+configure_hibernation_policy() {
+    echo "----------- Configuring Hibernation policy -----------"
 
-# Write rule to allow hibernation for all users.
-cat <<EOF | sudo tee /etc/polkit-1/rules.d/50-hibernate.rules
+    # Write rule to allow hibernation for all users.
+    cat <<- EOF | sudo tee /etc/polkit-1/rules.d/50-hibernate.rules
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.login1.hibernate" ||
         action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
@@ -211,11 +280,39 @@ polkit.addRule(function(action, subject) {
     }
 });
 EOF
-if  [ $? -ne 0 ]; then
-    echo "!!!!! Failed to update /etc/polkit-1/rules.d/50-hibernate.rules."
-    echo "!!!!! Aborted."
-    exit 1
-fi
+    if  [ $? -ne 0 ]; then
+        echo "!!!!! Failed to update /etc/polkit-1/rules.d/50-hibernate.rules."
+        echo "!!!!! Aborted."
+        exit 1
+    fi
+}
+
+
+
+# ----------------------------------------------------------------------
+# Main script starts here.
+#
+check_root_filesystem
+
+set_default_target_swap_size
+set_default_hibernate_delay_sec
+
+parse_arguments "$@"
+
+validate_and_normalize_hibernate_delay_sec
+validate_and_normalize_target_swap_size
+
+print_parameters
+
+save_original_swap_size
+
+resize_swap_file
+
+inform_swap_location_to_kernel
+
+configure_hibernate_delay_sec
+
+configure_hibernation_policy
 
 #----------------------------------------------------------------------
 #
