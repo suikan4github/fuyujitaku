@@ -6,6 +6,17 @@
 #
 #######################################################################
 
+# This script supports only ext4 filesystem.
+# Check if the root filesystem is ext4.
+ROOT_FS_TYPE=$(findmnt / -o FSTYPE --noheadings)
+if [ "$ROOT_FS_TYPE" != "ext4" ]; then
+    echo "!!!!! Root filesystem is not ext4."
+    echo "!!!!! This script supports only ext4 filesystem."
+    echo "!!!!! Aborted."
+    exit 1
+fi
+
+
 # if TARGET_SWAP_SIZE is not set, it will be calculated as 2 times the RAM size.
 if [ -z "$TARGET_SWAP_SIZE" ]; then
     # Required swap size is 2 times the RAM size.
