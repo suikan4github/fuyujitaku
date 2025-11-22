@@ -22,19 +22,58 @@ if [ -z "$TARGET_SWAP_SIZE" ]; then
     # Required swap size is 2 times the RAM size.
     # Get the current main memory size by free command.
     # Extract the size only and then, times 2.
-    TARGET_SWAP_SIZE=$(free --giga | awk '/Mem:/{print $2*2 "G"}')
+    TARGET_SWAP_SIZE=$(free --mega | awk '/Mem:/{print $2*2 "M"}')
 fi
-echo "Target swap size: ${TARGET_SWAP_SIZE}Byte"
-# convert target swap size to MB
-TARGET_SWAP_SIZE=$(echo "$TARGET_SWAP_SIZE" | awk '{print $1*1024}')
+
+# We accept the TARGET_SWAP_SIZE format as NNNG or NNNM.
+# Other formats are rejected. 
+# NNNG is NNN*1024M. So, we convert NNNG to NNN*1024M format.
+# ANd then, we strip the unit and keep only the size in MB.
+if echo "$TARGET_SWAP_SIZE" | grep -qE '^[0-9]+G$'; then
+    # G format
+    SIZE_IN_G=$(echo "$TARGET_SWAP_SIZE" | sed 's/G//')
+    TARGET_SWAP_SIZE=$(echo "$SIZE_IN_G" | awk '{print $1*1024 "M"}')
+elif echo "$TARGET_SWAP_SIZE" | grep -qE '^[0-9]+M$'; then
+    # M format
+    :
+else
+    echo "!!!!! TARGET_SWAP_SIZE format is invalid."
+    echo "!!!!! Please set TARGET_SWAP_SIZE in NNNG or NNNM format."
+    echo "!!!!! Aborted."
+    exit 1
+fi 
+
+# Remove the derived unit and keep only the size in MB.
+TARGET_SWAP_SIZE=$(echo "$TARGET_SWAP_SIZE" | sed 's/M//')
+
+echo "TARGET_SWAP_SIZE   : ${TARGET_SWAP_SIZE}MByte"
+
 
 # if HIBERNATE_DELAY_SEC is not set, the default value is 900 [Sec]
 if [ -z "$HIBERNATE_DELAY_SEC" ]; then
     # After 900 sec entering sleep, system goes to hibernate. 
-    HIBERNATE_DELAY_SEC=900
+    HIBERNATE_DELAY_SEC=900s
 fi
-echo "Hibernate delay after sleep: ${HIBERNATE_DELAY_SEC}Sec"
 
+# HIBERNATE_DELAY_SEC format must be NNNs, NNNsec, NNNm or NNNmin
+# All other formats are rejected.
+# NNNm is equivalent to NNN*60 sec.
+# All formats are converted to NNN format.
+if echo "$HIBERNATE_DELAY_SEC" | grep -qE '^[0-9]+s(ec)?$'; then
+    # sec format
+    HIBERNATE_DELAY_SEC=$(echo "$HIBERNATE_DELAY_SEC" | sed -E 's/s|sed//')
+elif echo "$HIBERNATE_DELAY_SEC" | grep -qE '^[0-9]+m(in)?$'; then
+    # min format
+    SIZE_IN_MIN=$(echo "$HIBERNATE_DELAY_SEC" | sed -E 's/m|min//')
+    HIBERNATE_DELAY_SEC=$(echo "$SIZE_IN_MIN" | awk '{print $1*60}')
+else
+    echo "!!!!! HIBERNATE_DELAY_SEC format is invalid."
+    echo "!!!!! Please set HIBERNATE_DELAY_SEC in NNNs, NNNsec, NNNm or NNNmin format."
+    echo "!!!!! Aborted."
+    exit 1
+fi
+
+echo "HIBERNATE_DELAY_SEC: ${HIBERNATE_DELAY_SEC}sec"
 
 # save original swap size
 BACKUPDIR=backup
