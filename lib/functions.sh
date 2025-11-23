@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Write a stream to a file.
+# This is a helper function to make test easier.
 # Usage:
 #  write_stream STREAM FILENAME 
 write_stream() {
@@ -11,9 +12,22 @@ write_stream() {
 }
 
 
+# Write a source file to a destination file.
+# This is a helper function to make test easier.
+# Usage:
+#  write_file SOURCE_FILENAME DESTINATION_FILENAME 
+write_file() {
+    local SOURCE_FILENAME="$1"
+    local DESTINATION_FILENAME="$2"
+
+    cp "$SOURCE_FILENAME" "$DESTINATION_FILENAME"
+}
+
+
+
 # Check if the root filesystem is ext4.
-# if it is ext4, return 0.
-# if it is not ext4, return 1.
+# If it is ext4, return 0.
+# If it is not ext4, return 1.
 check_root_filesystem() {
     ROOT_FS_TYPE=$(findmnt / -o FSTYPE --noheadings)
     if [ "$ROOT_FS_TYPE" != "ext4" ]; then
@@ -230,21 +244,23 @@ inform_swap_location_to_kernel() {
     local OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 
     # Save the current GRUB configuration to a temporary file.
+    local TEMP_GRUB=$(mktemp)
     local SAVED_GRUB=$(mktemp)
+    sudo cp /etc/default/grub "$TEMP_GRUB"
     sudo cp /etc/default/grub "$SAVED_GRUB"
 
     # If the grub configuration contains resume/resume_offset, remove them first.
-    sudo sed -i /^GRUB_CMDLINE_LINUX_DEFAULT/s/resume[_=a-zA-Z0-9-]*//g /etc/default/grub
+    sudo sed -i /^GRUB_CMDLINE_LINUX_DEFAULT/s/resume[_=a-zA-Z0-9-]*//g $TEMP_GRUB
 
     # Add the resume option to the GRUB_CMDLINE_LINUX_DEFAULT line in /etc/default/grub.
-    sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*['\"].*\)\(['\"]\).*$|\1 ${OPTION}\2|" /etc/default/grub
+    sudo sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=.*['\"].*\)\(['\"]\).*$|\1 ${OPTION}\2|" $TEMP_GRUB
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to update GRUB configuration."
         echo "!!!!! Aborted."
-        # Restore the original GRUB configuration.
-        sudo mv "$SAVED_GRUB" /etc/default/grub
         return 1
     fi
+
+    sudo write_file "$TEMP_GRUB" /etc/default/grub
 
     # Update the GRUB configuration.
     sudo update-grub
@@ -252,12 +268,12 @@ inform_swap_location_to_kernel() {
         echo "!!!!! Failed to update GRUB configuration."
         # Restore the original GRUB configuration.
         echo "!!!!! Restoring original GRUB configuration."
-        sudo mv "$SAVED_GRUB" /etc/default/grub
+        sudo write_file "$SAVED_GRUB" /etc/default/grub
         echo "!!!!! Aborted."
         return 1
     else
         # Save the original file.
-        cp "$SAVED_GRUB" "$BACKUPDIR"/grub
+        write_file "$SAVED_GRUB" "$BACKUPDIR/original_grub_config"
     fi
 
     echo "----------- GRUB configuration updated -----------"
