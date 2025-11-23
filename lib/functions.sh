@@ -5,8 +5,8 @@
 # Usage:
 #  write_stream STREAM FILENAME 
 write_stream() {
-    local FILENAME="$2"
-    local STREAM="$1"
+    FILENAME="$2"
+    STREAM="$1"
 
     echo "$STREAM" > "$FILENAME"
 }
@@ -17,12 +17,22 @@ write_stream() {
 # Usage:
 #  write_file SOURCE_FILENAME DESTINATION_FILENAME 
 write_file() {
-    local SOURCE_FILENAME="$1"
-    local DESTINATION_FILENAME="$2"
+    SOURCE_FILENAME="$1"
+    DESTINATION_FILENAME="$2"
 
     cp "$SOURCE_FILENAME" "$DESTINATION_FILENAME"
 }
 
+# Write a source file to a destination file as super user.
+# This is a helper function to make test easier.
+# Usage:
+#  write_file SOURCE_FILENAME DESTINATION_FILENAME 
+su_write_file() {
+    SOURCE_FILENAME="$1"
+    DESTINATION_FILENAME="$2"
+
+    sudo cp "$SOURCE_FILENAME" "$DESTINATION_FILENAME"
+}
 
 
 # Check if the root filesystem is ext4.
@@ -180,7 +190,7 @@ resize_swap_file() {
     echo "----------- Resizing swap file -----------"
 
     # Get the swap file name.
-    local SWAPFILE=$(swapon --show=NAME --noheadings)
+    SWAPFILE=$(swapon --show=NAME --noheadings)
     if [ -f "$SWAPFILE" ]; then
         echo "Swap file: $SWAPFILE"
     else
@@ -235,17 +245,17 @@ inform_swap_location_to_kernel() {
 
 
     # Get the UUID of the root filesystem (where the swap file stays).
-    local UUID=$(findmnt / -o UUID --noheadings)
+    UUID=$(findmnt / -o UUID --noheadings)
 
     # Get the offset of the swap file.
-    local OFFSET=$(sudo filefrag -v "$SWAPFILE" | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
+    OFFSET=$(sudo filefrag -v "$SWAPFILE" | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
 
     # Construct the resume option for kernel parameters.
-    local OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
+    OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 
     # Save the current GRUB configuration to a temporary file.
-    local TEMP_GRUB=$(mktemp)
-    local SAVED_GRUB=$(mktemp)
+    TEMP_GRUB=$(mktemp)
+    SAVED_GRUB=$(mktemp)
     sudo cp /etc/default/grub "$TEMP_GRUB"
     sudo cp /etc/default/grub "$SAVED_GRUB"
 
@@ -260,7 +270,7 @@ inform_swap_location_to_kernel() {
         return 1
     fi
 
-    sudo write_file "$TEMP_GRUB" /etc/default/grub
+    su_write_file "$TEMP_GRUB" /etc/default/grub
 
     # Update the GRUB configuration.
     sudo update-grub
@@ -268,7 +278,7 @@ inform_swap_location_to_kernel() {
         echo "!!!!! Failed to update GRUB configuration."
         # Restore the original GRUB configuration.
         echo "!!!!! Restoring original GRUB configuration."
-        sudo write_file "$SAVED_GRUB" /etc/default/grub
+        su_write_file "$SAVED_GRUB" /etc/default/grub
         echo "!!!!! Aborted."
         return 1
     else
