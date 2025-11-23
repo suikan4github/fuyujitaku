@@ -127,7 +127,7 @@ print_parameters() {
 
 # Save original swap size
 save_original_swap_size() {
-    BACKUPDIR=backup
+    local BACKUPDIR=backup
     mkdir -p "$BACKUPDIR"
     ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
     echo "$ORIGINAL_SWAP_SIZE" > "$BACKUPDIR"/swap_size
@@ -196,16 +196,16 @@ inform_swap_location_to_kernel() {
 
 
     # Get the UUID of the root filesystem (where the swap file stays).
-    UUID=$(findmnt / -o UUID --noheadings)
+    local UUID=$(findmnt / -o UUID --noheadings)
 
     # Get the offset of the swap file.
-    OFFSET=$(sudo filefrag -v "$SWAPFILE" | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
+    local OFFSET=$(sudo filefrag -v "$SWAPFILE" | awk '/ 0:/{print substr($4, 1, length($4)-2)}')
 
     # Construct the resume option for kernel parameters.
-    OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
+    local OPTION="resume=UUID=${UUID} resume_offset=${OFFSET}"
 
     # Save the current GRUB configuration to a temporary file.
-    SAVED_GRUB=$(mktemp)
+    local SAVED_GRUB=$(mktemp)
     sudo cp /etc/default/grub "$SAVED_GRUB"
 
     # If the grub configuration contains resume/resume_offset, remove them first.
