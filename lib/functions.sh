@@ -25,6 +25,8 @@ print_usage() {
     echo "            -d DELAY : Hibernate delay time. DELAY isNNNs, NNNm format."    
     echo "                       Where s is seconds and m is minutes."
     echo "                       If not specified, it will be set to 15m."
+
+    return 0
 }
 
 # Parse command line arguments.
@@ -60,6 +62,8 @@ parse_arguments() {
 # The value must have 'M' suffix.
 set_default_target_swap_size() {
     TARGET_SWAP_SIZE=$(free --mega | awk '/Mem:/{print $2*2 "M"}')
+
+    return 0
 }
 
 # Set default value to the HIBERNATE_DELAY_SEC variable.
@@ -67,6 +71,8 @@ set_default_target_swap_size() {
 # The value must have 'm' suffix.
 set_default_hibernate_delay_sec() {
     HIBERNATE_DELAY_SEC="15m"
+
+    return 0
 }
 
 
@@ -123,6 +129,8 @@ print_parameters() {
     echo "TARGET_SWAP_SIZE   : ${TARGET_SWAP_SIZE}MByte"
     echo "HIBERNATE_DELAY_SEC: ${HIBERNATE_DELAY_SEC}sec"
     echo "---------------------------------"
+    
+    return 0
 }   
 
 # Save original swap size
@@ -131,6 +139,8 @@ save_original_swap_size() {
     mkdir -p "$BACKUPDIR"
     ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
     echo "$ORIGINAL_SWAP_SIZE" > "$BACKUPDIR"/swap_size
+
+    return 0
 }
 
 
@@ -149,14 +159,14 @@ resize_swap_file() {
     else
         echo "!!!!! Swap file not found."
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
 
     sudo swapoff "$SWAPFILE"
     if [ $? -ne 0 ]; then
         echo "Failed to turn off swap file."
         echo "Aborted."
-        exit 1
+        return 1
     fi
 
     sudo dd if=/dev/zero of="$SWAPFILE" bs=1M count="$TARGET_SWAP_SIZE" status=progress
@@ -164,7 +174,7 @@ resize_swap_file() {
         echo "!!!!! Failed to resize swap file."
         echo "!!!!! Swap region is recovered with original size."
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
 
     sudo mkswap "$SWAPFILE"
@@ -173,16 +183,18 @@ resize_swap_file() {
         echo "!!!!! This is fatal and could be unrecoverable."
         echo "!!!!! Please check the swap file."
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
     sudo swapon "$SWAPFILE"
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to turn on swap file."
         echo "!!!!! Please check the swap file."    
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
     echo "----------- Resize completed -----------"
+
+    return 0
 }
 
 #----------------------------------------------------------------------
@@ -218,7 +230,7 @@ inform_swap_location_to_kernel() {
         echo "!!!!! Aborted."
         # remove the temporary file.
         rm "$SAVED_GRUB"
-        exit 1
+        return 1
     fi
 
     # Update the GRUB configuration.
@@ -229,13 +241,15 @@ inform_swap_location_to_kernel() {
         echo "!!!!! Restoring original GRUB configuration."
         sudo mv "$SAVED_GRUB" /etc/default/grub
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     else
         # Save the original file.
         cp "$SAVED_GRUB" "$BACKUPDIR"/grub
     fi
 
     echo "----------- GRUB configuration updated -----------"
+
+    return 0
 }
 
 #----------------------------------------------------------------------
@@ -255,8 +269,10 @@ configure_hibernate_delay_sec() {
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to update /etc/systemd/sleep.conf.d/hibernate.conf."
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
+
+    return 0
 }
 
 #----------------------------------------------------------------------
@@ -285,8 +301,10 @@ EOF
     if  [ $? -ne 0 ]; then
         echo "!!!!! Failed to update /etc/polkit-1/rules.d/50-hibernate.rules."
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
+
+    return 0
 }
 
 #----------------------------------------------------------------------
@@ -302,4 +320,6 @@ print_end_message() {
     echo "  sudo systemctl hibernate"
     echo "or"
     echo "You can hibernate from the GUI."
+
+    return 0
 }
