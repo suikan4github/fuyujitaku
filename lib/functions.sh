@@ -1,5 +1,16 @@
 #!/bin/sh
 
+# Write a stream to a file.
+# Usage:
+#  write_stream FILENAME STREAM
+write_stream() {
+    local FILENAME="$1"
+    local STREAM="$2"
+
+    echo "$STREAM" > "$FILENAME"
+}
+
+
 # Check if the root filesystem is ext4.
 # if it is ext4, return 0.
 # if it is not ext4, return 1.
@@ -138,7 +149,7 @@ save_original_swap_size() {
     local BACKUPDIR=backup
     mkdir -p "$BACKUPDIR"
     ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
-    echo "$ORIGINAL_SWAP_SIZE" > "$BACKUPDIR"/swap_size
+    write_stream "$BACKUPDIR/original_swap_size" "$ORIGINAL_SWAP_SIZE"
 
     return 0
 }
@@ -153,7 +164,7 @@ resize_swap_file() {
     echo "----------- Resizing swap file -----------"
 
     # Get the swap file name.
-    SWAPFILE=$(swapon --show=NAME --noheadings)
+    local SWAPFILE=$(swapon --show=NAME --noheadings)
     if [ -f "$SWAPFILE" ]; then
         echo "Swap file: $SWAPFILE"
     else
