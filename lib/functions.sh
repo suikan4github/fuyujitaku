@@ -239,8 +239,8 @@ inform_swap_location_to_kernel() {
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to update GRUB configuration."
         echo "!!!!! Aborted."
-        # remove the temporary file.
-        rm "$SAVED_GRUB"
+        # Restore the original GRUB configuration.
+        sudo mv "$SAVED_GRUB" /etc/default/grub
         return 1
     fi
 
