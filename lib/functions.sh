@@ -113,7 +113,7 @@ validate_and_normalize_hibernate_delay_sec() {
         return 1
     fi
 
-    erturn 0
+    return 0
 }
 
 
