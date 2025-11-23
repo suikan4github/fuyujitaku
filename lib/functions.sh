@@ -2,10 +2,10 @@
 
 # Write a stream to a file.
 # Usage:
-#  write_stream FILENAME STREAM
+#  write_stream STREAM FILENAME 
 write_stream() {
-    local FILENAME="$1"
-    local STREAM="$2"
+    local FILENAME="$2"
+    local STREAM="$1"
 
     echo "$STREAM" > "$FILENAME"
 }
@@ -146,10 +146,12 @@ print_parameters() {
 
 # Save original swap size
 save_original_swap_size() {
-    local BACKUPDIR=backup
+    # This directory is shared with inform_swap_location_to_kernel() function.
+    BACKUPDIR=backup
+
     mkdir -p "$BACKUPDIR"
     ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
-    write_stream "$BACKUPDIR/original_swap_size" "$ORIGINAL_SWAP_SIZE"
+    write_stream "$ORIGINAL_SWAP_SIZE" "$BACKUPDIR/original_swap_size" 
 
     return 0
 }

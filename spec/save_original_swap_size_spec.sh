@@ -5,8 +5,8 @@ Include 'lib/functions.sh'
 Describe 'print_parametsave_original_swap_sizeers function'
   # Mock of write_stream() function 
   write_stream() {
-    FILENAME="$1"
-    STREAM="$2"        
+    STREAM="$1"        
+    FILENAME="$2"
       return 0; 
   }
 
