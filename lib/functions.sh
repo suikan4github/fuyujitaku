@@ -28,7 +28,7 @@ print_usage() {
 }
 
 # Parse command line arguments.
-# If nor arguments are given, default values are used.
+# If unkown options are given, return with 1.
 parse_arguments() {
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -42,15 +42,17 @@ parse_arguments() {
                 ;;
             -h|--help)
                 print_usage
-                exit 0
+                return 1
                 ;;
             *)
                 echo "Unknown option: $1"
                 print_usage
-                exit 1
+                return 1
                 ;;
         esac
     done
+
+    return 0
 }
 
 # Set default value to the TARGET_SWAP_SIZE variable.
@@ -71,7 +73,7 @@ set_default_hibernate_delay_sec() {
 # Validate and normalize the TARGET_SWAP_SIZE.
 # 1G must be times 1024M.
 # Finally, we remove the unit and keep only the size in MB.
-# If the format is invalid, the script aborts.
+# If the format is invalid, the function return with 1.
 validate_and_normalize_target_swap_size() {
     if echo "$TARGET_SWAP_SIZE" | grep -qE '^[0-9]+G$'; then
         # G format
@@ -86,14 +88,16 @@ validate_and_normalize_target_swap_size() {
         echo "!!!!! TARGET_SWAP_SIZE format is invalid."
         echo "!!!!! Please set TARGET_SWAP_SIZE in NNNG or NNNM format."
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
+
+    return 0
 }
 
 # Validate and normalize the HIBERNATE_DELAY_SEC.
 # 1min must be times 60 sec.
 # Finally, we remove the unit and keep only the size in sec.
-# If the format is invalid, the script aborts.
+# If the format is invalid, the funciton return with 1.
 validate_and_normalize_hibernate_delay_sec() {
     if echo "$HIBERNATE_DELAY_SEC" | grep -qE '^[0-9]+s$'; then
         # sec format
@@ -106,8 +110,10 @@ validate_and_normalize_hibernate_delay_sec() {
         echo "!!!!! HIBERNATE_DELAY_SEC format is invalid."
         echo "!!!!! Please set HIBERNATE_DELAY_SEC in NNNs or NNNm format."
         echo "!!!!! Aborted."
-        exit 1
+        return 1
     fi
+
+    erturn 0
 }
 
 
@@ -281,4 +287,19 @@ EOF
         echo "!!!!! Aborted."
         exit 1
     fi
+}
+
+#----------------------------------------------------------------------
+#
+# End of script.
+#
+
+print_end_message() {
+    echo "************************************************************"
+    echo "All done."
+    echo "Please reboot your system to apply the changes."
+    echo "After reboot, you can use the following command to hibernate your system:"
+    echo "  sudo systemctl hibernate"
+    echo "or"
+    echo "You can hibernate from the GUI."
 }

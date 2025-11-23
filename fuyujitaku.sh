@@ -22,10 +22,23 @@ fi
 set_default_target_swap_size
 set_default_hibernate_delay_sec
 
+# If it return non zeor, abort the script
 parse_arguments "$@"
+if [ $? -ne 0]; then
+    exit 1
+fi
 
+# If it return non zeor, abort the script
 validate_and_normalize_hibernate_delay_sec
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# If it return non zeor, abort the script
 validate_and_normalize_target_swap_size
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 print_parameters
 
@@ -39,15 +52,6 @@ configure_hibernate_delay_sec
 
 configure_hibernation_policy
 
-#----------------------------------------------------------------------
-#
-# End of script.
-#
-echo "************************************************************"
-echo "All done."
-echo "Please reboot your system to apply the changes."
-echo "After reboot, you can use the following command to hibernate your system:"
-echo "  sudo systemctl hibernate"
-echo "or"
-echo "You can hibernate from the GUI."
+print_end_message
 
+exit 0
