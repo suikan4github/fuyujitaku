@@ -9,7 +9,22 @@ It also configure the suspend-then-hibernate delay. And finally, configure syste
 
 This script supports only systems with a swap file on ext4 file system. The system with swap partition is not supported.
 
+> [!Caution]
+> This script is tested with the actual machine. So, I believe that it works on most systems which users recent Ubuntu flavors. However, there is a possibility that it may not work on some systems. Please use this script at your own risk. It is recommended to back up your data before running the script. 
+
+
+## Requirements
+- Ubuntu 24.04(#1) or its flavors (e.g., Kubuntu, Ubuntu Mate, etc.)
+- ext4 file system
+- swap file (not swap partition)
+- sudo privileges
+
+---
+- (#1) Ubuntu updated the the Polkit version from Ubuntu 24.04. So, this script may not work on Ubuntu versions prior to 24.04.
+
 ## Test environment and results
+### Version 1.x.x
+The following table shows the test environment and results for version 1.x.x of this script.
 | OS                | Platform                      | Note       |
 |--                 |--                             |--          |
 | Ubuntu 24.04.2    | VirtualBox 7.1.8              | (#1)(#2)       |
@@ -17,42 +32,49 @@ This script supports only systems with a swap file on ext4 file system. The syst
 | Kubuntu 25.04    | VirtualBox 7.1.8               | (#1)       |
 | Kubuntu 25.04    | Fujitsu FMV Lifebook U939 (#4) | Works fine |
 
+---
 - (#1) Success to hibernate and resume, but after resuming, the system gets stuck during the shutdown process. The workaround is reboot-then-shutdown.
 - (#2) To show "Hibernation" button in the menu, you need to install the [Hibernate Status Button](https://extensions.gnome.org/extension/755/hibernate-status-button/). 
 - (#3) The mouse cursor is rendered incorrectly after resuming. The workaround is to reboot the system.
 - (#4) Intel Core i5-8365U, 8GB RAM, 256GB SSD.
+
+### Version 2.0
+The following table shows the test environment and results for version 1.x.x of this script.
+| OS                | Platform                       | Note       |
+| ----------------- | ------------------------------ | ---------- |
+| Kubuntu 25.10     | Fujitsu FMV Lifebook U939      | Works fine |
 
 
 ## How to use
 1. Download the latest release from [here](https://github.com/suikan4github/fuyujitaku).
 2. Extract the downloaded archive.
 3. Open a terminal and navigate to the extracted folder.
-4. Run the following command to install the package:
-```bash
-. ./fuyujitaku.sh
-```
+4. Run the following command to modify your system:
+`
+./fuyujitaku.sh
+`
 5. Then reboot your system.
 
-By default the swap size will be set to 2 times the RAM size. If you want to set a different swap size, you can specify it by `-s` option. 
+By default the swap size will be set to 2 times the RAM size. Also, the delay from entering sleep to entering hibernation is set to 900 seconds (15 minutes).
 
+If you want to set a different swap size, you can specify it by `-s` option. 
 For example, to set the swap size to 12GB , run the following command:
 ```bash
 ./fuyujitaku.sh -s 12G
 ```
 
-You can specify the swapsize by mega byte like `-s 512M`.
+You can also specify the swapsize by mega byte format. For example: `-s 512M`.
 
 Also, you can specify a parameter to specify the time delay from the entering sleep to the entering hibernaiton. This parameter is set by `-d` optoin. 
-
-By default, its value is 900[sec]. To change it to 600[sec], run the following command : 
+To change it to 600[sec], run the following command : 
 
 ```bash
 ./fuyujitaku.sh -d 600s
 ```
 
-You can also specify the delay by minute lie `-d 10m`
+You can also specify the delay by minutes format. For example: `-d 10m`
 
-You can specify both parameter at once. 
+Finally, you can specify both parameter at once. 
 
 ```bash
 ./fuyujitaku.sh -s 12G -d 600s
