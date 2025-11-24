@@ -1,6 +1,6 @@
 #! /bin/sh
 
-include 'lib/functions.sh'
+. ./lib/functions.sh
 
 #######################################################################
 #
@@ -24,7 +24,7 @@ set_default_hibernate_delay_sec
 
 # If it returns non zeor, abort the script
 parse_arguments "$@"
-if [ $? -ne 0]; then
+if [ $? -ne 0 ]; then
     exit 1
 fi
 
