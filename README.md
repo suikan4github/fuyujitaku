@@ -7,7 +7,7 @@ It extends the swap file to the RAM's size times 2 and registers it as the resum
 
 It also configure the suspend-then-hibernate delay. And finally, configure system to allow hibernation from the menu.
 
-This script supports only systems with a swap file. The system with swap partition is not supported.
+This script supports only systems with a swap file on ext4 file system. The system with swap partition is not supported.
 
 ## Test environment and results
 | OS                | Platform                      | Note       |
@@ -33,23 +33,30 @@ This script supports only systems with a swap file. The system with swap partiti
 ```
 5. Then reboot your system.
 
-By default the swap size will be set to 2 times the RAM size. If you want to set a different swap size, you can specify it as an environment variable TARGET_SWAP_SIZE before running the script. For example, to set the swap size to 12GB , run the following command:
+By default the swap size will be set to 2 times the RAM size. If you want to set a different swap size, you can specify it by `-s` option. 
+
+For example, to set the swap size to 12GB , run the following command:
 ```bash
-TARGET_SWAP_SIZE=12G ./fuyujitaku.sh
+./fuyujitaku.sh -s 12G
 ```
 
-Also, you can specify a parameter to specify the time delay from the entering sleep to the entering hibernaiton. This parameter is set by HIBERNATE_DELAY_SEC enviroment variable. By default, its value is 900[sec]. To change it to 600[sec], run the following command : 
+You can specify the swapsize by mega byte like `-s 512M`.
+
+Also, you can specify a parameter to specify the time delay from the entering sleep to the entering hibernaiton. This parameter is set by `-d` optoin. 
+
+By default, its value is 900[sec]. To change it to 600[sec], run the following command : 
 
 ```bash
-HIBERNATE_DELAY_SEC=600 ./fuyujitaku.sh
+./fuyujitaku.sh -d 600s
 ```
+
+You can also specify the delay by minute lie `-d 10m`
 
 You can specify both parameter at once. 
 
 ```bash
-TARGET_SWAP_SIZE=12G HIBERNATE_DELAY_SEC=600 ./fuyujitaku.sh
+./fuyujitaku.sh -s 12G -d 600s
 ```
-
 
 ## How to revert
 The revert.sh script is provided to revert the changes made by fuyujitaku.sh script.
@@ -60,18 +67,18 @@ To revert the changes, run the following command:
 . ./revert.sh
 ```
 
-Note that the revert.sh script works only if the fuyujitaku.sh script was run without any errors. If you have modified the system manually, the revert.sh script may not work as expected.
+Note that the revert.sh script works only if the fuyujitaku.sh script was run without any errors. 
 
 ## Troubleshooting
 If you encounter any issues while using this script, please check the following:
 - Ensure that you have a swap file and not a swap partition. This script does not support systems with swap partitions.
-- Ensure that you have enough disk space to extend the swap file. The script will attempt to double the size of the swap file.
+- Ensure that you have enough disk space to extend the swap file. The script will attempt to double the size of the swap file, by default.
 - Check the system logs for any error messages related to hibernation or swap file.
 
 Generally, the script should work on Ubuntu and its flavors. However, if you encounter any issues, please feel free to open an issue on the [GitHub repository](https://github.com/suikan4github/fuyujitaku/wiki)
 
 > [!IMPORTANT]
-> Please note that this script is provided as-is and may not work on all systems. Use it at your own risk. Each system is different, and the script may not work as expected on your system. It is recommended to back up your data before running the script.
+> Please note that this script is provided as-is and may not work on some systems. Use this script at your own risk. Each system is different. The script may not work as expected on your system by some reason. It is recommended to back up your data before running the script.
 
 ## Wiki
 For more information, please refer to the [Wiki](https://github.com/suikan4github/fuyujitaku/wiki).
