@@ -20,7 +20,7 @@ This script supports only systems with a swap file on ext4 file system. The syst
 - sudo privileges
 
 ---
-- (#1) Ubuntu updated the the Polkit version from Ubuntu 24.04. So, this script may not work on Ubuntu versions prior to 24.04.
+- (#1) Ubuntu updated the the Polkit major version from Ubuntu 24.04. So, this script may not work on Ubuntu versions prior to 24.04.
 
 ## Test environment and results
 ### Version 1.x.x
