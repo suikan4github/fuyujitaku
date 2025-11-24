@@ -40,7 +40,29 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-print_parameters
+# print_parameters
+
+# Ask user for confirmation before proceeding
+echo ""
+echo "This script will modify your system configuration to enable hibernation."
+echo "The following changes will be made:"
+echo "  - Resize swap file to ${TARGET_SWAP_SIZE}MB."
+echo "  - Update GRUB configuration."
+echo "  - Configure hibernation delay to ${HIBERNATE_DELAY_SEC} seconds."
+echo "  - Set hibernation policy to allow hibernation from menu."
+echo ""
+printf "Do you want to continue? (y/N): "
+read -r RESPONSE
+case "$RESPONSE" in
+    [yY]|[yY][eE][sS])
+        echo "Proceeding with hibernation configuration..."
+        ;;
+    *)
+        echo "Aborted by user."
+        exit 0
+        ;;
+esac
+echo ""
 
 save_original_swap_size
 
