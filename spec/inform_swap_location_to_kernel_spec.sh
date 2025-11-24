@@ -4,9 +4,6 @@ Include 'lib/functions.sh'
 
 Describe 'inform_swap_location_to_kernel function'
 
-    # Declare the global variable to capture the data.
-    WRITE_GRUB_SOURCE_FILENAME=
-
     sudo() {
         # Simulate sudo by calling the command directly.
         "$@"
@@ -30,16 +27,24 @@ EOF
         return 0
     }
 
-    write_file() {
-        _SOURCE_FILENAME="$1"
-        _DESTINATION_FILENAME="$2"
+    Before 'write_file() {
+        SOURCE_FILENAME="$1";
+        DESTINATION_FILENAME="$2";
+        return 0
+    }'
+
+    Before 'write_grub() {
+        WRITE_GRUB_SOURCE_FILENAME="$1";
+        return 0
+    }'
+
+    copy_grub() {
+        COPY_GRUB_DESTINATION_FILENAME="$1";
+        echo << EOF
+        
+EOF
         return 0
     }
-
-    write_grub() {
-        WRITE_GRUB_SOURCE_FILENAME="$1"
-        return 0
-    }   
 
     # shellcheck disable=SC3033
     update_grub() {

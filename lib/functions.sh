@@ -30,7 +30,7 @@ write_file() {
 write_grub() {
     SOURCE_FILENAME="$1"
 
-    sudo cp "$SOURCE_FILENAME" etc/default/grub
+    sudo cp "$SOURCE_FILENAME" /etc/default/grub
 }
 
 # Update the grub.
@@ -38,6 +38,14 @@ write_grub() {
 # For the ease of testing.
 update_grub() {
     sudo update-grub
+}
+
+# Copy from /etc/default/grub to a destination file.
+# This is a helper function to make test easier.
+copy_grub() {
+    DESTINATION_FILENAME="$1"
+
+    sudo cp /etc/default/grub "$DESTINATION_FILENAME"
 }
 
 # Check if the root filesystem is ext4.
@@ -261,8 +269,8 @@ inform_swap_location_to_kernel() {
     # Save the current GRUB configuration to a temporary file.
     TEMP_GRUB=$(mktemp)
     SAVED_GRUB=$(mktemp)
-    sudo cp /etc/default/grub "$TEMP_GRUB"
-    sudo cp /etc/default/grub "$SAVED_GRUB"
+    copy_grub "$TEMP_GRUB"
+    copy_grub "$SAVED_GRUB"
 
     # If the grub configuration contains resume/resume_offset, remove them first.
     sudo sed -i /^GRUB_CMDLINE_LINUX_DEFAULT/s/resume[_=a-zA-Z0-9-]*//g $TEMP_GRUB
