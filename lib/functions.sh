@@ -314,9 +314,10 @@ inform_swap_location_to_kernel() {
 #
 configure_hibernate_delay_sec() {
     echo "----------- Configuring HibernateDelaySec parameter -----------"
+    local NEW_DELAY_SEC="HibernateDelaySec=$HIBERNATE_DELAY_SEC"
 
     sudo mkdir -p /etc/systemd/sleep.conf.d
-    cat /etc/systemd/sleep.conf | sed "s|^.*HibernateDelaySec=.*$|HibernateDelaySec=${HIBERNATE_DELAY_SEC}|"| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
+    cat /etc/systemd/sleep.conf | sed "s|^.*HibernateDelaySec=.*$|${NEW_DELAY_SEC}|"| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
 
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to update /etc/systemd/sleep.conf.d/hibernate.conf."

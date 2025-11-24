@@ -40,8 +40,19 @@ EOF
 
     copy_grub() {
         COPY_GRUB_DESTINATION_FILENAME="$1";
-        echo << EOF
-        
+        cat > "$COPY_GRUB_DESTINATION_FILENAME" << EOF
+GRUB_DEFAULT=0
+#GRUB_HIDDEN_TIMEOUT=0
+GRUB_HIDDEN_TIMEOUT_QUIET=true
+GRUB_TIMEOUT=2
+GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
+GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=ext4 quiet splash acpi_osi="
+GRUB_CMDLINE_LINUX=""
+
+# Uncomment to enable BadRAM filtering, modify to suit your needs
+# This works with Linux (no patch required) and with any kernel that obtains
+# the memory map information from GRUB (GNU Mach, kernel of FreeBSD ...)
+#GRUB_BADRAM="0x01234567,0xfefefefe,0x89abcdef,0xefefefef"
 EOF
         return 0
     }
@@ -56,8 +67,8 @@ EOF
             When call inform_swap_location_to_kernel 
             The output should include "----------- Editing GRUB configuration -----------"
 
-            The file ${WRITE_GRUB_SOURCE_FILENAME} should include "resume=UUID=53735f87-6540-406e-8f61-722d0a4eb48a"
-            The file ${WRITE_GRUB_SOURCE_FILENAME} should include "resume_offset=2427392"
+            The contents of file ${WRITE_GRUB_SOURCE_FILENAME} should include "resume=UUID=53735f87-6540-406e-8f61-722d0a4eb48a"
+            The contents of file ${WRITE_GRUB_SOURCE_FILENAME} should include "resume_offset=2427392"
 
             The output should include "----------- GRUB configuration updated -----------"
             The status should be success
