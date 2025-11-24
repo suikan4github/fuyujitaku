@@ -33,6 +33,12 @@ write_grub() {
     sudo cp "$SOURCE_FILENAME" etc/default/grub
 }
 
+# Update the grub.
+# This is easy wrapper of the update-grub command.
+# For the ease of testing.
+update_grub() {
+    sudo update-grub
+}
 
 # Check if the root filesystem is ext4.
 # If it is ext4, return 0.
@@ -272,7 +278,7 @@ inform_swap_location_to_kernel() {
     write_grub "$TEMP_GRUB"
 
     # Update the GRUB configuration.
-    sudo update-grub
+    update_grub
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to update GRUB configuration."
         # Restore the original GRUB configuration.

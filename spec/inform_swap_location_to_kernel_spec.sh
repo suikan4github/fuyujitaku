@@ -4,7 +4,8 @@ Include 'lib/functions.sh'
 
 Describe 'inform_swap_location_to_kernel function'
 
-    Before 'alias update-grub="update_grub"'
+    # Declare the global variable to capture the data.
+    WRITE_GRUB_SOURCE_FILENAME=
 
     sudo() {
         # Simulate sudo by calling the command directly.
@@ -36,7 +37,7 @@ EOF
     }
 
     write_grub() {
-        _WRITE_GRUB_SOURCE_FILENAME="$1"
+        WRITE_GRUB_SOURCE_FILENAME="$1"
         return 0
     }   
 
@@ -50,8 +51,8 @@ EOF
             When call inform_swap_location_to_kernel 
             The output should include "----------- Editing GRUB configuration -----------"
 
-            The file ${_WRITE_GRUB_SOURCE_FILENAME} should include "resume=UUID=53735f87-6540-406e-8f61-722d0a4eb48a "
-            The file ${_WRITE_GRUB_SOURCE_FILENAME} should include "resume_offset=2427392"
+            The file ${WRITE_GRUB_SOURCE_FILENAME} should include "resume=UUID=53735f87-6540-406e-8f61-722d0a4eb48a"
+            The file ${WRITE_GRUB_SOURCE_FILENAME} should include "resume_offset=2427392"
 
             The output should include "----------- GRUB configuration updated -----------"
             The status should be success
