@@ -315,16 +315,18 @@ inform_swap_location_to_kernel() {
 configure_hibernate_delay_sec() {
     echo "----------- Configuring HibernateDelaySec parameter -----------"
     NEW_DELAY_SEC="HibernateDelaySec=$HIBERNATE_DELAY_SEC"
+    HIBERNATE_CONF="/etc/systemd/sleep.conf.d/hibernate.conf"
 
+    echo "${HIBERNATE_CONF}:"
     sudo mkdir -p /etc/systemd/sleep.conf.d
-    cat /etc/systemd/sleep.conf | sed "s|^.*HibernateDelaySec=.*$|${NEW_DELAY_SEC}|"| sudo tee /etc/systemd/sleep.conf.d/hibernate.conf
+    cat /etc/systemd/sleep.conf | sed "s|^.*HibernateDelaySec=.*$|${NEW_DELAY_SEC}|"| sudo tee ${HIBERNATE_CONF} 
 
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to update /etc/systemd/sleep.conf.d/hibernate.conf."
         echo "!!!!! Aborted."
         return 1
     fi
-
+    echo "----------- Configuration complete -----------"
     return 0
 }
 
@@ -337,9 +339,11 @@ configure_hibernate_delay_sec() {
 #
 configure_hibernation_policy() {
     echo "----------- Configuring Hibernation policy -----------"
+    POLICY_RULES="/etc/polkit-1/rules.d/50-hibernate.rules"
 
     # Write rule to allow hibernation for all users.
-    cat <<- EOF | sudo tee /etc/polkit-1/rules.d/50-hibernate.rules
+    echo ${POLICY_RULES}:
+    cat <<- EOF | sudo tee ${POLICY_RULES}
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.login1.hibernate" ||
         action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
@@ -356,6 +360,7 @@ EOF
         echo "!!!!! Aborted."
         return 1
     fi
+    echo "----------- Configuration complete -----------"
 
     return 0
 }
@@ -368,6 +373,7 @@ EOF
 print_end_message() {
     echo "************************************************************"
     echo "All done."
+    echo ""
     echo "Please reboot your system to apply the changes."
     echo "After reboot, you can use the following command to hibernate your system:"
     echo "  sudo systemctl hibernate"
