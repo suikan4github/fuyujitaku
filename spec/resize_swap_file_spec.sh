@@ -4,17 +4,20 @@ Include 'lib/functions.sh'
 
 Describe 'resize_swap_file function'
   # Mock functions 
+  # shellcheck disable=SC2329
   swapon() {
     SWAPON_PARAM="$1"
     echo "spec/dummy_files/swapfile"
     return 0
   }
 
+  # shellcheck disable=SC2329
   swapoff() {
     SWAPOFF_PARAM="$1"
     return 0
   }
 
+  # shellcheck disable=SC2329
   dd() {
     DD_PARAM_IF="$1"
     DD_PARAM_OF="$2"
@@ -24,6 +27,7 @@ Describe 'resize_swap_file function'
     return 0
   }
 
+  # shellcheck disable=SC2329
   mkswap() {
     MKSWAP_PARAM="$1"
     return 0
@@ -33,6 +37,7 @@ Describe 'resize_swap_file function'
     "$@"
   }
 
+  # shellcheck disable=SC2034
   TARGET_SWAP_SIZE="1024"
 
   # Test
@@ -55,6 +60,7 @@ Describe 'resize_swap_file function'
 
   Context 'When the mkswap fails'
     mkswap() {
+      # shellcheck disable=SC2034
       MKSWAP_PARAM="$1"
       return 1
     }
@@ -74,6 +80,7 @@ Describe 'resize_swap_file function'
   End
 
   Context 'When the 2nd swapon fails'
+    # shellcheck disable=SC2329
     swapon() {
         SWAPON_PARAM="$1"
         echo "spec/dummy_files/swapfile"
@@ -97,10 +104,15 @@ Describe 'resize_swap_file function'
 
   Context 'When the dd fails'
     dd() {
+        # shellcheck disable=SC2034
         DD_PARAM_IF="$1"
+        # shellcheck disable=SC2034
         DD_PARAM_OF="$2"
+        # shellcheck disable=SC2034
         DD_PARAM_BS="$3"
+        # shellcheck disable=SC2034
         DD_PARAM_COUNT="$4"
+        # shellcheck disable=SC2034
         DD_PARAM_STATUS="$5"
         return 1
     }
@@ -120,6 +132,7 @@ Describe 'resize_swap_file function'
 
   Context 'When the swapoff fails'
     swapoff() {
+        # shellcheck disable=SC2034
         SWAPOFF_PARAM="$1"
         return 1
     }
@@ -134,6 +147,7 @@ Describe 'resize_swap_file function'
 
   Context 'When the swapon fails'
     swapon() {
+        # shellcheck disable=SC2034
         SWAPON_PARAM="$1"
         echo "spec/dummy_files/swapfile2"
         return 0

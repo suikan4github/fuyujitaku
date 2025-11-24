@@ -27,11 +27,10 @@ write_file() {
 # This is a helper function to make test easier.
 # Usage:
 #  write_file SOURCE_FILENAME DESTINATION_FILENAME 
-su_write_file() {
+write_grub() {
     SOURCE_FILENAME="$1"
-    DESTINATION_FILENAME="$2"
 
-    sudo cp "$SOURCE_FILENAME" "$DESTINATION_FILENAME"
+    sudo cp "$SOURCE_FILENAME" etc/default/grub
 }
 
 
@@ -270,7 +269,7 @@ inform_swap_location_to_kernel() {
         return 1
     fi
 
-    su_write_file "$TEMP_GRUB" /etc/default/grub
+    write_grub "$TEMP_GRUB"
 
     # Update the GRUB configuration.
     sudo update-grub
@@ -278,7 +277,7 @@ inform_swap_location_to_kernel() {
         echo "!!!!! Failed to update GRUB configuration."
         # Restore the original GRUB configuration.
         echo "!!!!! Restoring original GRUB configuration."
-        su_write_file "$SAVED_GRUB" /etc/default/grub
+        write_grub "$SAVED_GRUB" /etc/default/grub
         echo "!!!!! Aborted."
         return 1
     else
