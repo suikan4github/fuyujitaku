@@ -40,7 +40,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# print_parameters
+# If it returns non zeor, abort the script
+validate_swap_file_size
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 # Ask user for confirmation before proceeding
 echo ""

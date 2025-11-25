@@ -65,6 +65,10 @@ For example, to set the swap size to 12GB , run the following command:
 
 You can also specify the swapsize by mega byte format. For example: `-s 512M`.
 
+> [!NOTE]
+> If the avairable disk space - specified swap size < 1GB, 
+> Fuyujitaku terminates immediately. 
+
 Also, you can specify a parameter to specify the time delay from the entering sleep to the entering hibernaiton. This parameter is set by `-d` optoin. 
 To change it to 600[sec], run the following command : 
 
