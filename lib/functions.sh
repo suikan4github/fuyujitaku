@@ -171,16 +171,6 @@ validate_and_normalize_hibernate_delay_sec() {
 }
 
 
-# Print the parameters for confirmation.
-print_parameters() {
-    echo "----------- Parameters -----------"
-    echo "TARGET_SWAP_SIZE   : ${TARGET_SWAP_SIZE}MByte"
-    echo "HIBERNATE_DELAY_SEC: ${HIBERNATE_DELAY_SEC}sec"
-    echo "---------------------------------"
-    
-    return 0
-}   
-
 # Save original swap size
 save_original_swap_size() {
     # This directory is shared with inform_swap_location_to_kernel() function.
