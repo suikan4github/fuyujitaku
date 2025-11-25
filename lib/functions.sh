@@ -170,16 +170,35 @@ validate_and_normalize_hibernate_delay_sec() {
     return 0
 }
 
+#----------------------------------------------------------------------
+#
+# Valide the new swap file is possible to store in the root file system. 
+# The TARGET_SWAP_SIZE in MByte must meet the following equeation. 
+# 
+#  Free space in root filesystem (in MByte) + Current swap size (in MByte)  > TARGET_SWAP_SIZE (in MByte) + 1024MB.
+#
+# If it is not met, we return with 1.
+#
+validate_swap_file_size() {
+    # Get free space in root filesystem in MByte.
+    FREE_SPACE=$(df -m / | awk 'NR==2 {print $4}')
+    # Get current swap size in MByte.
+    CURRENT_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
 
-# Print the parameters for confirmation.
-print_parameters() {
-    echo "----------- Parameters -----------"
-    echo "TARGET_SWAP_SIZE   : ${TARGET_SWAP_SIZE}MByte"
-    echo "HIBERNATE_DELAY_SEC: ${HIBERNATE_DELAY_SEC}sec"
-    echo "---------------------------------"
-    
+    REQUIRED_SIZE=$((TARGET_SWAP_SIZE + 1024))
+    AVAILABLE_SIZE=$((FREE_SPACE + CURRENT_SWAP_SIZE))
+
+    if [ "$AVAILABLE_SIZE" -le "$REQUIRED_SIZE" ]; then
+        echo "!!!!! Not enough space in root filesystem to resize swap file."
+        echo "!!!!! Required size: ${REQUIRED_SIZE}MB"
+        echo "!!!!! Available size: ${AVAILABLE_SIZE}MB"
+        echo "!!!!! Aborted."
+        return 1
+    fi
+
     return 0
-}   
+}
+
 
 # Save original swap size
 save_original_swap_size() {
