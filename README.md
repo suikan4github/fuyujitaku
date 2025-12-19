@@ -38,7 +38,7 @@ The following table shows the test environment and results for version 1.x.x of 
 - (#3) The mouse cursor is rendered incorrectly after resuming. The workaround is to reboot the system.
 - (#4) Intel Core i5-8365U, 8GB RAM, 256GB SSD.
 
-### Version 2.0
+### Version 2.0.x
 The following table shows the test environment and results for version 1.x.x of this script.
 | OS                | Platform                       | Note       |
 | ----------------- | ------------------------------ | ---------- |
@@ -55,7 +55,7 @@ The following table shows the test environment and results for version 1.x.x of 
 `
 5. Then reboot your system.
 
-By default the swap size will be set to 2 times the RAM size. Also, the delay from entering sleep to entering hibernation is set to 900 seconds (15 minutes).
+By default the swap size will be set to 2 times the RAM size. Also, the delay from entering sleep to entering hibernation is set to 1440 minutes (24 hours).
 
 If you want to set a different swap size, you can specify it by `-s` option. 
 For example, to set the swap size to 12GB , run the following command:
@@ -95,6 +95,14 @@ To revert the changes, run the following command:
 
 Note that the revert.sh script works only if the fuyujitaku.sh script was run without any errors. 
 
+## How to test
+To run the auto tests, you need to install [shellspec](https://github.com/shellspec/shellspec).
+
+Then, run the following command in the root directory of this project:
+
+```bash
+shellspec
+```
 ## Troubleshooting
 If you encounter any issues while using this script, please check the following:
 - Ensure that you have a swap file and not a swap partition. This script does not support systems with swap partitions.

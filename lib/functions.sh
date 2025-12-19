@@ -72,7 +72,7 @@ print_usage() {
     echo "                       If not specified, it will be set to 2 times the RAM size."
     echo "            -d DELAY : Hibernate delay time. DELAY isNNNs, NNNm format."    
     echo "                       Where s is seconds and m is minutes."
-    echo "                       If not specified, it will be set to 15m."
+    echo "                       If not specified, it will be set to 1440m(24h)."
 
     return 0
 }
@@ -115,10 +115,10 @@ set_default_target_swap_size() {
 }
 
 # Set default value to the HIBERNATE_DELAY_SEC variable.
-# The default value is 15 minutes.
+# The default value is 1440 minutes.
 # The value must have 'm' suffix.
 set_default_hibernate_delay_sec() {
-    HIBERNATE_DELAY_SEC="15m"
+    HIBERNATE_DELAY_SEC="1440m"
 
     return 0
 }

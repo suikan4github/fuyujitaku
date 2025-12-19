@@ -10,9 +10,9 @@ Describe 'set_default_hibernate_delay_sec function'
       return 0
   }'
 
-  It "should set HIBERNATE_DELAY_SEC=15m"
+  It "should set HIBERNATE_DELAY_SEC=1440m"
     When call set_default_hibernate_delay_sec
-    The variable HIBERNATE_DELAY_SEC should equal '15m'
+    The variable HIBERNATE_DELAY_SEC should equal '1440m'
   End
 
 End
