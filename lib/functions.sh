@@ -203,11 +203,12 @@ validate_swap_file_size() {
 # Save original swap size
 save_original_swap_size() {
     # This directory is shared with inform_swap_location_to_kernel() function.
-    BACKUPDIR=backup
+    BACKUPDIR=$(get_backup_dir_name)
+    SWAPSIZEFILE=$(get_original_swap_size_file_name)
 
     mkdir -p "$BACKUPDIR"
     ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
-    write_stream "$ORIGINAL_SWAP_SIZE" "$BACKUPDIR/original_swap_size" 
+    write_stream "$ORIGINAL_SWAP_SIZE" "$BACKUPDIR/$SWAPSIZEFILE" 
 
     return 0
 }
@@ -275,6 +276,9 @@ resize_swap_file() {
 inform_swap_location_to_kernel() {
     echo "----------- Editing GRUB configuration -----------"
 
+    # Get the file name to store original grub.
+    GRUBFILE=$(get_original_grub_file_name)
+
 
     # Get the UUID of the root filesystem (where the swap file stays).
     UUID=$(findmnt / -o UUID --noheadings)
@@ -315,7 +319,7 @@ inform_swap_location_to_kernel() {
         return 1
     else
         # Save the original file.
-        write_file "$SAVED_GRUB" "$BACKUPDIR/original_grub_config"
+        write_file "$SAVED_GRUB" "$BACKUPDIR/$GRUBFILE"
     fi
 
     echo "----------- GRUB configuration updated -----------"
@@ -381,6 +385,35 @@ EOF
     fi
     echo "----------- Configuration complete -----------"
 
+    return 0
+}
+
+#----------------------------------------------------------------------
+#
+# Obtain the file name of the saved original grub file.
+#
+get_original_grub_file_name() {
+    printf "%s\n" "original_grub_config"
+
+    return 0
+}
+
+#----------------------------------------------------------------------
+#
+# Obtain the file name of the saved original swap size.
+#
+get_original_swap_size_file_name() {
+    printf "%s\n" "original_swap_size" 
+
+    return 0
+}
+
+#----------------------------------------------------------------------
+#
+# Obtain the backup directory name.
+#
+get_backup_dir_name() {
+    printf "%s\n" "backup"
     return 0
 }
 
