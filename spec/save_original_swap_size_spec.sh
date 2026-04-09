@@ -2,7 +2,7 @@
 
 Include 'lib/functions.sh'
 
-Describe 'print_parametsave_original_swap_sizeers function'
+Describe 'save_original_swap_size function'
   # Mock of write_stream() function 
   write_stream() {
     STREAM="$1"        
