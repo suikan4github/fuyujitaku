@@ -98,6 +98,9 @@ Note that the revert.sh script works only if the fuyujitaku.sh script was run wi
 ## How to test
 To run the auto tests, you need to install [shellspec](https://github.com/shellspec/shellspec).
 
+> [!NOTE]
+> In the case of using the devcontainer, shellspec is automatically added when the devcontainer is built, so you can run your tests in the container without installing shellspec on your local machine.
+
 Then, run the following command in the root directory of this project:
 
 ```bash
