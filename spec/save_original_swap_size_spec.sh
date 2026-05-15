@@ -5,7 +5,9 @@ Include 'lib/functions.sh'
 Describe 'save_original_swap_size function'
   # Mock of write_stream() function 
   write_stream() {
+    # shellcheck disable=SC2034
     STREAM="$1"        
+    # shellcheck disable=SC2034
     FILENAME="$2"
       return 0; 
   }
