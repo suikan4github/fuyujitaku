@@ -34,7 +34,7 @@ The following table shows the test environment and results for version 3.0.x of 
 | Lubuntu 26.04     | Hyper-V    | Need Workaround (#1)|
 
 ---
-- (#1) After executing the fuyujitaku.sh script, reboot the system and then, run `update-initramfs -u -k all` command. See [Workarounds for certain flavors of Ubuntu 26.04 LTS](#workarounds-for-certain-flavors-of-ubuntu-2604-lts) section for details.
+- (#1) After executing the `fuyujitaku.sh` script, reboot the system and then, run `update-initramfs -u -k all` command. See [Workarounds for certain flavors of Ubuntu 26.04 LTS](#workarounds-for-certain-flavors-of-ubuntu-2604-lts) section for details.
 
 ### Version 2.0.x
 The following table shows the test environment and results for version 2.0.x of this script.
@@ -102,7 +102,7 @@ Finally, you can specify both parameter at once.
 ```
 
 ### Workarounds for certain flavors of Ubuntu 26.04 LTS
-Certain flavors of Ubuntu 26.04 LTS (e.g., Ubuntu and Lubuntu) have a problem that prevent the execusion of `systemctl hibernate` command after running the fuyujitaku.sh script. 
+Certain flavors of Ubuntu 26.04 LTS (e.g., Ubuntu and Lubuntu) have a problem that prevent the execusion of `systemctl hibernate` command after running the `fuyujitaku.sh` script. 
 
 Usually, the following command can configure the system hibernate possible. 
 
@@ -110,34 +110,35 @@ Usually, the following command can configure the system hibernate possible.
 ./fuyujitaku.sh
 sudo reboot
 ```
-But you will see the following error message when you run `systemctl hibernate` command after running the above commands, in some flavors of Ubuntu 26.04 LTS.
+But you may see the following error message when you run `systemctl hibernate` command after running the above commands, in some flavors of Ubuntu 26.04 LTS.
 
 ```
 Call to Hibernate failed: Invalid resume config: resume= is not populated yet resume_offset= is
 ```
-This is reported in the issue #15 .
+This is reported in the [issue #15](#15).
 
 The workaround is to run the following command **after** rebooting the system. 
 
 ```bash
+# Run these commands after rebooting the system.
 sudo update-initramfs -u -k all
 sudo reboot
 ```
 
 
 ## How to revert
-The revert.sh script is provided to revert the changes made by fuyujitaku.sh script.
+The `revert.sh` script is provided to revert the changes made by `fuyujitaku.sh` script.
 
 To revert the changes, run the following command:
 
 ```bash
-. ./revert.sh
+./revert.sh
 ```
 
 > [!Note]
 > The revert.sh script works only if the fuyujitaku.sh script run without any errors. 
 
-The revert.sh script will restore the original swap size and the original kernel parameters. It will also remove the backup files created by fuyujitaku.sh script.
+The `revert.sh` script will restore the original swap size and the original kernel parameters. It will also remove the backup files created by `fuyujitaku.sh` script.
 
 ## How to test
 To run the auto tests, you need to install [shellspec](https://github.com/shellspec/shellspec).
