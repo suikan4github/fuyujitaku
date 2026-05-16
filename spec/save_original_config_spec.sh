@@ -37,6 +37,7 @@ Describe 'save_original_config function'
 
   It 'should give the original swap size and backup file name to stdn in and parameter, respectively, if backup directory does not exist'
     # Mock of backup_dir_exists() function to simulate the case when the backup directory does not exist.
+    # shellcheck disable=SC2329
     backup_dir_exists() {
       return 1
     }
