@@ -36,8 +36,8 @@ Describe 'save_original_config function'
 
 
   It 'should give the original swap size and backup file name to stdn in and parameter, respectively, if backup directory does not exist'
-    # Mock of backup_dir_exist() function to simulate the case when the backup directory does not exist.
-    backup_dir_exist() {
+    # Mock of backup_dir_exists() function to simulate the case when the backup directory does not exist.
+    backup_dir_exists() {
       return 1
     }
 
@@ -48,8 +48,8 @@ Describe 'save_original_config function'
   End
 
   It 'should not give anything if backup directory already exists'
-     # Mock of backup_dir_exist() function to simulate the case when the backup directory already exists.
-    backup_dir_exist() {
+     # Mock of backup_dir_exists() function to simulate the case when the backup directory already exists.
+    backup_dir_exists() {
       return 0
     }
 

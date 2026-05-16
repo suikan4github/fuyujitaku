@@ -220,7 +220,7 @@ save_original_config() {
 
     # if the backup directory does not exist, create it and save the original swap size and grub file.
     # if not, skip creating it because it may contain the backup files.
-    if ! backup_dir_exist; then
+    if ! backup_dir_exists; then
         # Create backup directory.
         mkdir -p "$BACKUPDIR"
 
