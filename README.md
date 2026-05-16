@@ -115,7 +115,7 @@ But you may see the following error message when you run `systemctl hibernate` c
 ```
 Call to Hibernate failed: Invalid resume config: resume= is not populated yet resume_offset= is
 ```
-This is reported in the [issue #15](#15).
+This is reported in the [issue #15](https://github.com/suikan4github/fuyujitaku/issues/15).
 
 The workaround is to run the following command **after** rebooting the system. 
 
