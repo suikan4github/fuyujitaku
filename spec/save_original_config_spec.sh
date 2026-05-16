@@ -34,6 +34,12 @@ Describe 'save_original_config function'
     return 0
   }
 
+  # Mock of mkdir() function to simulate the creation of backup directory
+  mkdir() {
+    MKDIR_FLAG="$1";
+    MKDIR_DIR="$2";
+    return 0
+  }
 
   It 'should give the original swap size and backup file name to stdn in and parameter, respectively, if backup directory does not exist'
     # Mock of backup_dir_exists() function to simulate the case when the backup directory does not exist.
@@ -43,6 +49,8 @@ Describe 'save_original_config function'
     }
 
     When call save_original_config
+    The variable MKDIR_FLAG should equal "-p"
+    The variable MKDIR_DIR should equal "backup"
     The variable FILENAME should equal "backup/original_swap_size"
     The variable STREAM should equal "15892"
     The variable COPY_GRUB_DESTINATION_FILENAME should equal "backup/original_grub_config"
