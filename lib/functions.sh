@@ -52,6 +52,13 @@ update_grub() {
     sudo update-grub
 }
 
+# Update the initramfs.
+# This is easy wrapper of the update-initramfs command.
+# For the ease of testing.
+update_initramfs() {
+    sudo update-initramfs -u
+}
+
 # Copy from /etc/default/grub to a destination file.
 # This is a helper function to make test easier.
 copy_grub() {
@@ -333,6 +340,16 @@ inform_swap_location_to_kernel() {
         echo "!!!!! Aborted."
         return 1
     fi
+
+    # Update the GRUB configuration.
+    update_initramfs
+    if [ $? -ne 0 ]; then
+        echo "!!!!! Failed to update initramfs."
+        echo "!!!!! Aborted."
+        return 1
+    fi
+
+    
 
     echo "----------- GRUB configuration updated -----------"
 

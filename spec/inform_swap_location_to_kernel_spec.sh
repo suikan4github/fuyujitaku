@@ -62,6 +62,11 @@ EOF
         return 0
     }
 
+    # shellcheck disable=SC3033
+    update_initramfs() {
+        return 0
+    }
+
     Context "When successful" 
         It "should inform swap location to kernel and return 0" 
             When call inform_swap_location_to_kernel 
