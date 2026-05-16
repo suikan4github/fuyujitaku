@@ -1,5 +1,17 @@
 #!/bin/sh
 
+# Check whether the backup directory exists. 
+# Return true(0) if it exists, false(1) if it does not exist.
+# This is helper function for the test to check whether the backup directory is created.
+backup_dir_exists() {
+    BACKUPDIR=$(get_backup_dir_name)
+    if [ -d "$BACKUPDIR" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Write a stream to a file.
 # This is a helper function to make test easier.
 # Usage:
@@ -201,15 +213,25 @@ validate_swap_file_size() {
 
 
 # Save original swap size
-save_original_swap_size() {
+save_original_config() {
     # This directory is shared with inform_swap_location_to_kernel() function.
     BACKUPDIR=$(get_backup_dir_name)
     SWAPSIZEFILE=$(get_original_swap_size_file_name)
 
-    mkdir -p "$BACKUPDIR"
-    ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
-    write_stream "$ORIGINAL_SWAP_SIZE" "$BACKUPDIR/$SWAPSIZEFILE" 
+    # if the backup directory does not exist, create it and save the original swap size and grub file.
+    # if not, skip creating it because it may contain the backup files.
+    if ! backup_dir_exist; then
+        # Create backup directory.
+        mkdir -p "$BACKUPDIR"
 
+        # Get the original swap size in MByte and save it to a file.
+        ORIGINAL_SWAP_SIZE=$(free --mega | awk '/Swap:/{print $2}')
+        write_stream "$ORIGINAL_SWAP_SIZE" "$BACKUPDIR/$SWAPSIZEFILE" 
+
+        # Get the file name to store original grub.
+        GRUBFILE=$(get_original_grub_file_name)
+        copy_grub "$BACKUPDIR/$GRUBFILE"
+    fi
     return 0
 }
 
@@ -276,9 +298,6 @@ resize_swap_file() {
 inform_swap_location_to_kernel() {
     echo "----------- Editing GRUB configuration -----------"
 
-    # Get the file name to store original grub.
-    GRUBFILE=$(get_original_grub_file_name)
-
 
     # Get the UUID of the root filesystem (where the swap file stays).
     UUID=$(findmnt / -o UUID --noheadings)
@@ -291,9 +310,8 @@ inform_swap_location_to_kernel() {
 
     # Save the current GRUB configuration to a temporary file.
     TEMP_GRUB=$(mktemp)
-    SAVED_GRUB=$(mktemp)
     copy_grub "$TEMP_GRUB"
-    copy_grub "$SAVED_GRUB"
+
 
     # If the grub configuration contains resume/resume_offset, remove them first.
     sudo sed -i /^GRUB_CMDLINE_LINUX_DEFAULT/s/resume[_=a-zA-Z0-9-]*//g $TEMP_GRUB
@@ -312,14 +330,8 @@ inform_swap_location_to_kernel() {
     update_grub
     if [ $? -ne 0 ]; then
         echo "!!!!! Failed to update GRUB configuration."
-        # Restore the original GRUB configuration.
-        echo "!!!!! Restoring original GRUB configuration."
-        write_grub "$SAVED_GRUB" /etc/default/grub
         echo "!!!!! Aborted."
         return 1
-    else
-        # Save the original file.
-        write_file "$SAVED_GRUB" "$BACKUPDIR/$GRUBFILE"
     fi
 
     echo "----------- GRUB configuration updated -----------"

@@ -68,7 +68,7 @@ case "$RESPONSE" in
 esac
 echo ""
 
-save_original_swap_size
+save_original_config
 
 # If it returns non zero, abort the script.
 resize_swap_file

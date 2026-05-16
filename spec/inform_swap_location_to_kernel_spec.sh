@@ -25,7 +25,7 @@ File size of /swapfile is 4294967296 (1048576 blocks of 4096 bytes)
    3:    16384..   28671:    2557952..   2570239:  12288:    2535424:
 EOF
         return 0
-    }
+    } # filefrag()
 
     Before 'write_file() {
         SOURCE_FILENAME="$1";
@@ -55,7 +55,7 @@ GRUB_CMDLINE_LINUX=""
 #GRUB_BADRAM="0x01234567,0xfefefefe,0x89abcdef,0xefefefef"
 EOF
         return 0
-    }
+    } # copy_grub()
 
     # shellcheck disable=SC3033
     update_grub() {
