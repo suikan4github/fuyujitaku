@@ -36,7 +36,9 @@ Describe 'save_original_config function'
 
   # Mock of mkdir() function to simulate the creation of backup directory
   mkdir() {
+    # shellcheck disable=SC2034
     MKDIR_FLAG="$1";
+    # shellcheck disable=SC2034
     MKDIR_DIR="$2";
     return 0
   }
