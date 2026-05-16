@@ -14,14 +14,16 @@ This script supports only systems with a swap file on ext4 file system. The syst
 
 
 ## Requirements
-- Ubuntu 24.04(#1) or newer
-  - The flavors (e.g., Kubuntu, Ubuntu Mate, etc.)
-- ext4 file system
-- swap file (not swap partition)
-- sudo privileges
+- Ubuntu 24.04(#1) or newer.
+  - The flavors (e.g., Kubuntu, Ubuntu Mate, etc.).
+- ext4 file system.
+- swap file (not swap partition).
+- sudo privileges.
+- Secure boot disabled in the BIOS/UEFI settings (#2).
 
 ---
 - (#1) Ubuntu updated the the Polkit major version from Ubuntu 24.04. So, this script may not work on Ubuntu versions prior to 24.04.
+- (#2) Linux kernel lockdown feature prevents the resume from hibernation during the secure boot. To use hibernation, you need to disable secure boot in the BIOS/UEFI settings. 
 
 ## Test environment and results
 
@@ -29,6 +31,7 @@ This script supports only systems with a swap file on ext4 file system. The syst
 The following table shows the test environment and results for version 3.0.x of this script.
 | OS                | Platform   | Note       |
 | ----------------- | -----------| ---------- |
+| Ubuntu 24.04      | Hyper-V    | Works fine|
 | Ubuntu 26.04      | Hyper-V    | Need workaround (#1)|
 | Kubuntu 26.04     | Hyper-V    | Works fine |
 | Lubuntu 26.04     | Hyper-V    | Need Workaround (#1)|
@@ -155,6 +158,7 @@ shellspec
 If you encounter any issues while using this script, please check the following:
 - Ensure that you have a swap file and not a swap partition. This script does not support systems with swap partitions.
 - Ensure that you have enough disk space to extend the swap file. The script will attempt to double the size of the swap file, by default.
+- Ensure that secure boot is disabled in the BIOS/UEFI settings. 
 - Check the system logs for any error messages related to hibernation or swap file.
 
 Generally, the script should work on Ubuntu and its flavors. However, if you encounter any issues, please feel free to open an issue on the [GitHub repository](https://github.com/suikan4github/fuyujitaku/wiki)
