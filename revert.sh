@@ -73,13 +73,14 @@ if [ $? -ne 0 ]; then
 fi
 #-----------------------------------------------------------------------
 # Update the grub configuration
-echo "----------- Updating GRUB configuration -----------"
+echo "----------- Reverting GRUB configuration -----------"
 sudo update-grub
 if [ $? -ne 0 ]; then
     echo "!!!!! Failed to update GRUB configuration."
     echo "!!!!! Aborted."
     exit 1
 fi
+
 #-----------------------------------------------------------------------
 # Remove the custom sleep configuration
 echo "----------- Removing sleep configuration -----------"
@@ -109,13 +110,19 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 #-----------------------------------------------------------------------
+# Remove the backup files
+echo "----------- Removing backup files -----------"
+sudo rm -rf "$BACKUPDIR"
+
+#-----------------------------------------------------------------------
 # All done
 echo "----------- Revert completed -----------"
-echo "Swap file size reverted to original size: $ORIGINAL_SWAP_SIZE MB"
-echo "GRUB configuration reverted to original."
-echo "Sleep configuration reverted to original."
-echo "Policykit configuration reverted to original."
+echo "Reverted swap file size to original size: $ORIGINAL_SWAP_SIZE MB"
+echo "Reverted GRUB configuration to original."
+echo "Reverted sleep configuration to original."
+echo "Reverted policykit configuration to original."
 echo "Systemd daemon reloaded."
+echo "Original files removed."
 echo "All done."
 echo "Please reboot your system to apply the changes."
 
