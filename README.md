@@ -34,6 +34,7 @@ The following table shows the test environment and results for version 3.0.x of 
 | Ubuntu 24.04      | Hyper-V    | Works fine|
 | Ubuntu 26.04      | Hyper-V    | Need workaround (#1)|
 | Kubuntu 26.04     | Hyper-V    | Works fine |
+| Kubuntu 26.04     | Fujitsu FMV Lifebook U9312      | Works fine |
 | Lubuntu 26.04     | Hyper-V    | Need Workaround (#1)|
 
 ---
