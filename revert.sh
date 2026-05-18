@@ -80,17 +80,7 @@ if [ $? -ne 0 ]; then
     echo "!!!!! Aborted."
     exit 1
 fi
-#-----------------------------------------------------------------------
-# Update initramfs
-# This is necessary to apply the changes in the GRUB configuration,
-# from Ubuntu 26.04. 
-echo "----------- Updating initramfs -----------"
-sudo update-initramfs -u
-if [ $? -ne 0 ]; then
-    echo "!!!!! Failed to update initramfs."
-    echo "!!!!! Aborted."
-    exit 1
-fi
+
 #-----------------------------------------------------------------------
 # Remove the custom sleep configuration
 echo "----------- Removing sleep configuration -----------"
